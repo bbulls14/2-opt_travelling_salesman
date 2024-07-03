@@ -1,50 +1,60 @@
-# import pandas lib as pd
-import pandas as pd
 from Package import Package
+import csv
 
 INITIAL_CAPACITY = 40
 class Node:
-    def __init__(self, key):
+    def __init__(self, key, hashMapPackageData):
         self.key = key
-        self.hashPackage = self.getHashMapPackageData(key)
+        self.hashPackage = hashMapPackageData
         self.next = None
     
-    def getHashMapPackageData(self, key): 
-        data = pd.read_excel('WGUPS Package File.xlsx')
-        row = key+6
-        packageID = data.iloc[row,0]
-        address = data.iloc[row,1]
-        city = data.iloc[row,2]
-        zipCode = data.iloc[row,4]
-        deadline = data.iloc[row,5]
-        weight = data.iloc[row,6]
-        status = "at the hub"
-        return Package.forHashMap(packageID, address, city, zipCode, deadline, weight, status)
- 
+    def __str__(self):
+        if self.hashPackage:
+            return str(self.hashPackage)
+        else:
+            return "No package data"
         
 class HashTable():
     def __init__(self):
         self.size = INITIAL_CAPACITY
         self.buckets = [None] * self.size
         self.used = 0
+        self.hashMapPackageData = self.getHashMapPackageData('WGUPS Packages.csv')
+        
+    def getHashMapPackageData(self, filePath): 
+        hashMapPackageData = {}
+        with open(filePath, mode = 'r', encoding='UTF-8-sig') as file:
+            csvFile = csv.reader(file, delimiter=',')
+            next(csvFile)
+            for row in csvFile:
+                packageID = int(row[0])
+                address = row[1]
+                city = row[2]
+                zipCode = row[5]
+                deadline = row[6]
+                weight = row[7]
+                status = "at the hub"
+                hashMapPackageData[packageID] = Package.forHashMap(packageID, address, city, zipCode, deadline, weight, status)
+        return hashMapPackageData    
         
     def hash(self, key):
-        return key -1
+        return key - 1
     
     def insert (self, key):
         self.used += 1
         index = self.hash(key)
+        hashMapPackageData = self.hashMapPackageData.get(key, None)
         node = self.buckets[index]
         
         if node is None:
-            self.buckets[index] = Node(key)
+            self.buckets[index] = Node(key, hashMapPackageData)
             return
-        prev = node
         
+        prev = node
         while node is not None:
             prev = node
             node = node.next
-        prev.next = Node(key)
+        prev.next = Node(key, hashMapPackageData)
         
                 
     def find(self, key):
@@ -64,6 +74,7 @@ class HashTable():
         index = self.hash(key)
         node = self.buckets[index]
         
+        
         while node is not None and node.key != key:
             prev = node
             node = node.next
@@ -72,46 +83,20 @@ class HashTable():
             return None
         else:
             self.used -= 1
-            result = node
+            result = node.hashPackage
             if prev is None:
-                node = None
+                self.buckets[index] = node.next
             else:
                 prev.next = node.next
-                return result
+            return result
+        
+    def __str__(self):
+        output = []
+        for bucket in self.buckets:
+            node = bucket
+            while node is not None:
+                output.append(str(node))
+                node = node.next
+        return "\n".join(output)
             
   
-  
-  
-# if __name__ == "__main__":      
-
-#     hashTable = HashTable()
-    
-#     for row in range (7, 47):
-
-#         packageTraits = []
-#         for col in range (0, 7):
-#             packageTraits.append(packagesExcel.iat[row, col])
-                 
-
-#         package = Package.HashPackage(
-#             packageID = packageTraits[0],
-#             address = packageTraits[1],
-#             city = packageTraits[2],
-#             zipCode = packageTraits [3],
-#             deadline = packageTraits[5],
-#             weight = packageTraits[6],
-#             # specialNotes = packageTraits[7],
-#             status = "at the hub"
-#         )
-#         hashTable.insert(package)
-        
-
-# for index, bucket in enumerate(hashTable.table):
-#     if bucket:
-#         print(f"Index {index + 1}: {bucket}")
-
-
-
-
-
-
