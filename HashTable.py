@@ -2,6 +2,9 @@ from Package import Package
 import csv
 
 INITIAL_CAPACITY = 40
+
+
+
 class Node:
     def __init__(self, key, hashMapPackageData):
         self.key = key
@@ -19,24 +22,27 @@ class HashTable():
         self.size = INITIAL_CAPACITY
         self.buckets = [None] * self.size
         self.used = 0
-        self.hashMapPackageData = self.getHashMapPackageData('WGUPS Packages.csv')
-        
-    def getHashMapPackageData(self, filePath): 
+        self.hashMapPackageData = self.getHashMapPackageData(pkgFilePath='WGUPS Packages.csv')
+        self.populateTable()
+           
+    def getHashMapPackageData(self, pkgFilePath): 
         hashMapPackageData = {}
-        with open(filePath, mode = 'r', encoding='UTF-8-sig') as file:
+        with open(pkgFilePath, mode = 'r', encoding='UTF-8-sig') as file:
             csvFile = csv.reader(file, delimiter=',')
             next(csvFile)
             for row in csvFile:
-                packageID = int(row[0])
+                packageID = row[0]
                 address = row[1]
                 city = row[2]
                 zipCode = row[5]
                 deadline = row[6]
                 weight = row[7]
                 status = "at the hub"
-                hashMapPackageData[packageID] = Package.forHashMap(packageID, address, city, zipCode, deadline, weight, status)
-        return hashMapPackageData    
-        
+            
+                keyIndex = int(packageID)
+                hashMapPackageData[keyIndex] = Package.forHashMap(packageID, address, city, zipCode, deadline, weight, status)
+        return hashMapPackageData
+    
     def hash(self, key):
         return key - 1
     
@@ -90,13 +96,22 @@ class HashTable():
                 prev.next = node.next
             return result
         
-    def __str__(self):
-        output = []
-        for bucket in self.buckets:
-            node = bucket
-            while node is not None:
-                output.append(str(node))
-                node = node.next
-        return "\n".join(output)
+    # def __str__(self):
+    #     output = []
+    #     for bucket in self.buckets:
+    #         node = bucket
+    #         while node is not None:
+    #             output.append(str(node))
+    #             node = node.next
+    #     return "\n".join(output)
+    
+    def populateTable(self):
+        for key in self.hashMapPackageData.keys():
+            self.insert(key)
             
-  
+    # def printKeyValuePairs(self):
+    #     for bucket in self.buckets:
+    #         node = bucket
+    #         while node is not None:
+    #             print(f"Key: {node.key}, Value: {node.hashPackage}")
+    #             node = node.next
