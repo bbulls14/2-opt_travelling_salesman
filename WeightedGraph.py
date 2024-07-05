@@ -1,4 +1,8 @@
 import csv
+import heapq
+from Package import Package
+
+startVertex = '4001 South 700 East'
 
 class Vertex:
     def __init__(self, n):
@@ -9,60 +13,46 @@ class Graph:
         self.vertices = {}
         self.edges = []
         self.edgeIndices = {}
-        self.vertexData = []
-        self.distances = []
-        self.load_data('WGUPS Addresses.csv', 'WGUPS Distances.csv')
-        self.initialize_vertices_and_edges()
+        self.getVertexData()
+        self.getEdgeWeight()
 
-    def getDistanceData(self, distanceFile):
-        distances = []
-        with open(distanceFile, mode='r', encoding='UTF-8-sig') as file:
+    def getVertexData(self):
+        with open('Wgups Distances.csv', mode='r', encoding='UTF-8-sig') as file:
             csvFile = csv.reader(file, delimiter=',')
             for row in csvFile:
-                distanceRow = []
-                for j, value in enumerate(row):
-                    if value:
-                        weight = float(value)
-                    else:
-                        weight = 0.0  
-                    distanceRow.append(weight)
-                distances.append(distanceRow)
-        return distances
-
-    def load_data(self, vertex_file, distance_file):
-        with open(vertex_file, mode='r', encoding='UTF-8-sig') as file:
-            csvFile = csv.reader(file, delimiter=',')
-            for row in csvFile:
-                vertex = row[0]  # Assuming the first column is the vertex name
-                self.vertexData.append(Vertex(vertex))
-
-        self.distances = self.getDistanceData(distance_file)
-
-    def initialize_vertices_and_edges(self):
-        for vertex in self.vertexData:
-            self.addVertex(vertex)
-
-        for i, row in enumerate(self.distances):
-            for j, weight in enumerate(row):
-                if weight != 0.0:  # Assuming '0.0' indicates no direct edge
-                    self.addEdge(self.vertexData[i].name, self.vertexData[j].name, weight)
+                vertex = row[0]  
+                self.addVertex(Vertex(vertex))
 
     def addVertex(self, vertex):
         if isinstance(vertex, Vertex) and vertex.name not in self.vertices:
             self.vertices[vertex.name] = vertex
             
-            # Update edges matrix for the new vertex
             for row in self.edges:
-                row.append(0.0)
-            self.edges.append([0.0] * (len(self.edges) + 1))
+                row.append(0)
+            self.edges.append([0] * (len(self.edges) + 1))
             
-            # Update edge indices
             self.edgeIndices[vertex.name] = len(self.edgeIndices)
             
             return True
         else:
             return False
-
+        
+    def getEdgeWeight(self):
+        vertexName = list(self.vertices.keys())
+        
+        with open('WGUPS Distances.csv', mode='r', encoding='UTF-8-sig') as file:
+            csvFile = list(csv.reader(file, delimiter=','))
+            for i, row in enumerate(csvFile):
+                for j, value in enumerate(row):
+                    if j == 0:
+                        continue
+                    if value:
+                        weight = float(value)
+                    else:
+                        weight = 0  
+                    if weight != 0:
+                        self.addEdge(vertexName[i], vertexName[j-1], weight)
+                    
     def addEdge(self, u, v, weight):
         if u in self.vertices and v in self.vertices:
             self.edges[self.edgeIndices[u]][self.edgeIndices[v]] = weight
@@ -79,16 +69,32 @@ class Graph:
         for row in self.edges:
             print(' '.join(map(str, row)))
 
+    
+    def dijkstra(self):
+        distances = {vertex: float('inf') for vertex in self.vertices}
+        distances[startVertex] = 0
+        pq = [(0, startVertex)]
+    
+        while pq:
+            currentDistance, currentVertex = heapq.heappop(pq)
+            # print(f"Processing vertex: {currentVertex} with current distance: {currentDistance}")
+        
+            for neighborIndex, weight in enumerate(self.edges[self.edgeIndices[currentVertex]]):
+                if weight > 0: 
+                    neighborVertex = list(self.edgeIndices.keys())[neighborIndex]
+                    distance = currentDistance + weight
+                    # print(f"Checking neighbor: {neighborVertex}, weight: {weight}, calculated distance: {distance}")
+                
+                    if distance < distances[neighborVertex]:
+                        distances[neighborVertex] = distance
+                        heapq.heappush(pq, (distance, neighborVertex))
+                        # print(f"Updated distance for {neighborVertex}: {distance}")
+    
+        rounded_distances = {vertex: round(dist, 1) for vertex, dist in distances.items()}
+        return rounded_distances
 
+        
 
-# Example usage
-
-
-
-# # Example usage:
-# g = Graph()
-# g.printGraph()
-          
         
     
         
