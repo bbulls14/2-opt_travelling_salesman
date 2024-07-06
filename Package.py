@@ -1,8 +1,13 @@
 import csv
+from datetime import datetime
+
+startTime = datetime.strptime(f'8:00 AM', '%H:%M %p').time()
 
 class Package(object):
-    def __init__(self, packageID=None, address=None, city=None, state=None, zipCode=None, 
-                 deadline=None, weight=None, specialNote=None, status = ""):
+    
+
+    def __init__(self, packageID, address, city, state, zipCode, 
+                 deadline, weight, specialNote, status = ""):
         self.packageID = packageID
         self.address = address
         self.city = city
@@ -11,13 +16,10 @@ class Package(object):
         self.deadline = deadline
         self.weight = weight
         self.specialNote = specialNote
-        self.status = status
+        self.status = f"{status} {startTime}"
     
-    @classmethod
-    def forHashMap(cls, packageID, address, city, zipCode, deadline, weight, status):
-        return cls(packageID=packageID, address=address, deadline=deadline, city=city, 
-                   zipCode=zipCode, weight=weight, status=status)
-        
+    def __str__(self):
+        return (f"PackageID: {self.packageID}, Address: {self.address}, City: {self.city}, ZipCode: {self.zipCode} Deadline: {self.deadline}, Weight: {self.weight}, Status: {self.status}")
     
     def getPackageDataList():
         packageData = []
@@ -25,12 +27,16 @@ class Package(object):
             csvFile = csv.reader(file, delimiter=',')
             next(csvFile)
             for row in (csvFile):
-                packageID = int(row[0])
+                packageID = row[0]
                 address = row[1]
                 city = row[2]
                 state = row[3]
                 zipCode = row[4]
                 deadline = row[5]
+                if 'EOD' in deadline:
+                    deadline = datetime.strptime('8:00 AM', '%H:%M %p').time()
+                else:
+                    deadline = datetime.strptime(deadline, '%H:%M %p').time()
                 weight = row[6]
                 specialNote = row[7]
                 status = "at the hub"
@@ -40,7 +46,4 @@ class Package(object):
                 packageData.append(package)
         return packageData
     
-    def __str__(self):
-        return (f"PackageID: {self.packageID}, Address: {self.address}")
-    
-    
+    # def updateStatus():

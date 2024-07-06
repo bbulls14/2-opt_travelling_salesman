@@ -2,11 +2,11 @@ import csv
 import heapq
 from Package import Package
 
-startVertex = '4001 South 700 East'
+
 
 class Vertex:
-    def __init__(self, n):
-        self.name = n
+    def __init__(self, address):
+        self.address = address
 
 class Graph:
     def __init__(self):
@@ -24,21 +24,21 @@ class Graph:
                 self.addVertex(Vertex(vertex))
 
     def addVertex(self, vertex):
-        if isinstance(vertex, Vertex) and vertex.name not in self.vertices:
-            self.vertices[vertex.name] = vertex
+        if isinstance(vertex, Vertex) and vertex.address not in self.vertices:
+            self.vertices[vertex.address] = vertex
             
             for row in self.edges:
                 row.append(0)
             self.edges.append([0] * (len(self.edges) + 1))
             
-            self.edgeIndices[vertex.name] = len(self.edgeIndices)
+            self.edgeIndices[vertex.address] = len(self.edgeIndices)
             
             return True
         else:
             return False
         
     def getEdgeWeight(self):
-        vertexName = list(self.vertices.keys())
+        vertexAddress = list(self.vertices.keys())
         
         with open('WGUPS Distances.csv', mode='r', encoding='UTF-8-sig') as file:
             csvFile = list(csv.reader(file, delimiter=','))
@@ -51,7 +51,7 @@ class Graph:
                     else:
                         weight = 0  
                     if weight != 0:
-                        self.addEdge(vertexName[i], vertexName[j-1], weight)
+                        self.addEdge(vertexAddress[i], vertexAddress[j-1], weight)
                     
     def addEdge(self, u, v, weight):
         if u in self.vertices and v in self.vertices:
@@ -63,14 +63,14 @@ class Graph:
 
     def printGraph(self):
         print("Graph vertices and adjacency matrix:")
-        for vertex, index in self.edgeIndices.items():
+        for vertex in self.edgeIndices.items():
             print(f"Vertex: {vertex}")
         print("\nAdjacency matrix:")
         for row in self.edges:
             print(' '.join(map(str, row)))
 
     
-    def dijkstra(self):
+    def dijkstra(self, startVertex):
         distances = {vertex: float('inf') for vertex in self.vertices}
         distances[startVertex] = 0
         pq = [(0, startVertex)]
@@ -82,12 +82,12 @@ class Graph:
             for neighborIndex, weight in enumerate(self.edges[self.edgeIndices[currentVertex]]):
                 if weight > 0: 
                     neighborVertex = list(self.edgeIndices.keys())[neighborIndex]
-                    distance = currentDistance + weight
+                    time = (currentDistance + weight)/18
                     # print(f"Checking neighbor: {neighborVertex}, weight: {weight}, calculated distance: {distance}")
                 
-                    if distance < distances[neighborVertex]:
-                        distances[neighborVertex] = distance
-                        heapq.heappush(pq, (distance, neighborVertex))
+                    if time < (distances[neighborVertex]/18):
+                        distances[neighborVertex] = time
+                        heapq.heappush(pq, (time, neighborVertex))
                         # print(f"Updated distance for {neighborVertex}: {distance}")
     
         rounded_distances = {vertex: round(dist, 1) for vertex, dist in distances.items()}

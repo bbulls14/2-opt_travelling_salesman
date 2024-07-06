@@ -7,11 +7,21 @@ hashTable = HashTable()
 graph = Graph()
 logistics = Logistics(graph, hashTable)
 
-best_packages = logistics.sortPackagesForTrucks()
 
-print("Best packages to load onto the truck:")
-for package in best_packages:
-    print(package)
+
+truck1 = logistics.choosePackagesForTrucks()
+
+logistics.printKeyValuePairs()
+
+# print("Best packages to load onto the truck:")
+# for package in best_packages:
+#     print(package)
+
+
+# packagesassignedtotrucks = logistics.choosePackagesForTrucks()
+# logistics.printKeyValuePairs(packagesassignedtotrucks)
+
+
 
 
 

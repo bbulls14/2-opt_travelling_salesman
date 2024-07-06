@@ -1,118 +1,109 @@
 from Package import Package
-import csv
 
 INITIAL_CAPACITY = 40
 
-
-
-class Node:
-    def __init__(self, key, hashMapPackage):
+class Bucket:
+    def __init__(self, key, bucketPackage):
         self.key = key
-        self.hashPackage = hashMapPackage
         self.next = None
+        self.bucketPackage = bucketPackage
     
     def __str__(self):
-        if self.hashPackage:
-            return str(Package(self.hashPackage))
+        if self.bucketPackage:
+            return (self.bucketPackage)
         else:
             return "No package data"
         
 class HashTable():
     def __init__(self):
         self.size = INITIAL_CAPACITY
-        self.buckets = [None] * self.size
+        self.hashMap = [None] * self.size
         self.used = 0
-        self.hashMapPackageData = self.getHashMapPackageData()
+        self.hashPackageData = Package.getPackageDataList()
         self.populateTable()
-           
-    def getHashMapPackageData(self): 
-        hashMapPackageData = []
-        with open('WGUPS Packages.csv', mode = 'r', encoding='UTF-8-sig') as file:
-            csvFile = csv.reader(file, delimiter=',')
-            next(csvFile)
-            for row in csvFile:
-                packageID = int(row[0])
-                address = row[1]
-                city = row[2]
-                zipCode = row[5]
-                deadline = row[6]
-                weight = row[7]
-                status = "at the hub"
-            
-                package = Package.forHashMap(packageID, address, city, zipCode, deadline, weight, status)
-                hashMapPackageData.append((packageID, package))
-        return hashMapPackageData
+
     
     def hash(self, key):
         return key - 1
     
-    def insert (self, key):
-        self.used += 1
-        index = self.hash(key)
-        hashPackage = self.hashMapPackageData[index][1]
-        node = self.buckets[index]
+    def insert (self, key): 
+        if key < 1 or key > self.size:
+            return "invalid packageID"      
         
-        if node is None:
-            self.buckets[index] = Node(key, hashPackage)
+        self.used += 1
+        bucketID = self.hash(key)
+        bd = self.hashPackageData[bucketID]
+        bucketPackage = (bd.address, bd.deadline, bd.city, bd.zipCode, bd.weight, bd.status)
+        bucket = self.hashMap[bucketID]
+        
+        if bucket is None:
+            self.hashMap[bucketID] = Bucket(key, bucketPackage)
             return
         
-        prev = node
-        while node is not None:
-            prev = node
-            node = node.next
-        prev.next = Node(key, hashPackage)
+        while bucket is not None:
+            bucket = bucket.next
+        bucket.next = Bucket(key, bucketPackage)
         
                 
     def find(self, key):
-        index = self.hash(key)
-        node = self.buckets[index]
+        if key < 1 or key > self.size:
+            return "invalid packageID"
+                 
         
-        while node is not None and node.key != key:
-            node = node.next
+        bucketID = self.hash(key)
+        bucket = self.hashMap[bucketID]
+        
+        while bucket is not None and bucket.key != key:
+            bucket = bucket.next
             
-        if node is None:
+        if bucket is None:
             return None
         else:
-            return node.hashPackage.address 
+            return bucket.bucketPackage 
     
     def remove (self, key):
-        index = self.hash(key)
-        node = self.buckets[index]
+        if key < 1 or key > self.size:
+            print("invalid packageID")
+            return None      
+        
+        bucketID = self.hash(key)
+        bucket = self.hashMap[bucketID]
+        prev = None
         
         
-        while node is not None and node.key != key:
-            prev = node
-            node = node.next
+        while bucket is not None and bucket.key != key:
+            prev = bucket
+            bucket = bucket.next
             
-        if node is None:
+        if bucket is None:
             return None
+        
+        self.used -= 1
+        result = bucket.key
+        if prev is None:
+            self.hashMap[bucketID] = bucket.next
         else:
-            self.used -= 1
-            result = node.hashPackage
-            if prev is None:
-                self.buckets[index] = node.next
-            else:
-                prev.next = node.next
-            return result
+            prev.next = bucket.next
+        return result
         
     def __str__(self):
         output = []
-        for bucket in self.buckets:
-            node = bucket
-            while node is not None:
-                output.append(str(node))
-                node = node.next
+        for buckets in self.hashMap:
+            bucket = buckets
+            while bucket is not None:
+                output.append(str(bucket.bucketPackage))
+                bucket = bucket.next
         return "\n".join(output)
     
+    
     def populateTable(self):
-        for i in range(0, len(self.hashMapPackageData)):
-            self.insert(self.hashMapPackageData[i][0])
+        key = (self.hashPackageData[0])
+        for key in range(len(self.hashPackageData)):
+            self.insert(key)
             
     def printKeyValuePairs(self):
-        for bucket in self.buckets:
-            node = bucket
-            while node is not None:
-                print(f"Key: {node.key}, Value: {node.hashPackage}")
-                node = node.next
-                
+        for bucket in self.hashMap:
+            b = bucket
+            while b is not None:
+                b = b.next
         
