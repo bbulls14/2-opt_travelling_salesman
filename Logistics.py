@@ -45,5 +45,6 @@ class Logistics:
         
         return truck1 
             
-                
+    def twoOptAlgo(self):
+        return True            
    

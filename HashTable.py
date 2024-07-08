@@ -20,7 +20,7 @@ class HashTable():
         self.hashMap = [None] * self.size
         self.used = 0
         self.hashPackageData = Package.getPackageDataList()
-        self.populateTable()
+        # self.populateTable()
 
     
     def hash(self, key):
@@ -96,10 +96,10 @@ class HashTable():
         return "\n".join(output)
     
     
-    def populateTable(self):
-        key = (self.hashPackageData[0])
-        for key in range(len(self.hashPackageData)):
-            self.insert(key)
+    # def populateTable(self):
+    #     key = (self.hashPackageData[0])
+    #     for key in range(len(self.hashPackageData)):
+    #         self.insert(key)
             
     def printKeyValuePairs(self):
         for bucket in self.hashMap:

@@ -10,13 +10,12 @@ class Vertex:
         self.index = index
         self.next = None
 
-class Graph:
+class Matrix:
     def __init__(self, listOfVertices):
         self.vertices = {}
         self.edges = []
         self.edgeIndices = {}
         self.getVertexData(listOfVertices)
-        self.getEdgeWeight()
 
     def getVertexData(self, listOfVertices):
         listOfVertices.append('HUB')
@@ -35,14 +34,13 @@ class Graph:
         self.getEdgeWeight()
 
     def getEdgeWeight(self):
-        vertexIndex = list(self.vertices.values())
         vertexAddress = list(self.vertices.keys())
+        vertexIndex = list(self.vertices.values())
     
         with open('WGUPS Distances.csv', mode='r', encoding='UTF-8-sig') as file:
             csvFile = list(csv.reader(file, delimiter=','))
+            
             zeroEdge=0
-            
-            
             for i in range(len(vertexIndex)):
                 
                 index1 = vertexIndex[i]

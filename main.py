@@ -1,6 +1,6 @@
 from operator import itemgetter
 from HashTable import HashTable
-from WeightedGraph import Graph
+from LocalAdjMatrix import Graph
 from Logistics import Logistics
 from Package import Package
 from Truck import Truck
