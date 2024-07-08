@@ -1,21 +1,24 @@
+from operator import itemgetter
 from HashTable import HashTable
 from WeightedGraph import Graph
 from Logistics import Logistics
 from Package import Package
+from Truck import Truck
 
-hashTable = HashTable()
-graph = Graph()
-logistics = Logistics(graph, hashTable)
+getAddresses: itemgetter = itemgetter(1)
+
+logistics = Logistics()
+
+
+truck1 = logistics.choosePackagesForTrucks()   
+truckAddresses = truck1.packagesOnTruck
+
+graph = Graph(truckAddresses)
+
+graph.printGraph()
 
 
 
-truck1 = logistics.choosePackagesForTrucks()
-
-logistics.printKeyValuePairs()
-
-# print("Best packages to load onto the truck:")
-# for package in best_packages:
-#     print(package)
 
 
 # packagesassignedtotrucks = logistics.choosePackagesForTrucks()

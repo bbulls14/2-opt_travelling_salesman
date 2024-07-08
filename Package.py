@@ -34,7 +34,7 @@ class Package(object):
                 zipCode = row[4]
                 deadline = row[5]
                 if 'EOD' in deadline:
-                    deadline = datetime.strptime('8:00 AM', '%H:%M %p').time()
+                    deadline = datetime.strptime('4:00 PM', '%H:%M %p').time()
                 else:
                     deadline = datetime.strptime(deadline, '%H:%M %p').time()
                 weight = row[6]
