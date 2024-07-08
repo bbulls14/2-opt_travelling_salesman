@@ -2,6 +2,8 @@ from Package import Package
 
 INITIAL_CAPACITY = 40
 
+#referenced from PageKey at 6:19-10:17 of https://www.youtube.com/watch?v=zHi5v78W1f0&t=628s
+
 class Bucket:
     def __init__(self, key, bucketPackage):
         self.key = key

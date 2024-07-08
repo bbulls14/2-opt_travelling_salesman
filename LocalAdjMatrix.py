@@ -17,6 +17,7 @@ class Matrix:
         self.edgeIndices = {}
         self.getVertexData(listOfVertices)
 
+    #lines 21-76 referenced from Oggi AI at 6:26-8:43 of https://www.youtube.com/watch?v=HDUzBEG1GlA&t=486s
     def getVertexData(self, listOfVertices):
         listOfVertices.append('HUB')
         with open('Wgups Distances.csv', mode='r', encoding='UTF-8-sig') as file:
