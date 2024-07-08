@@ -10,8 +10,8 @@ class Vertex:
 
 class Graph:
     def __init__(self, listOfVertices):
-        self.vertices = {}
         self.size = len(listOfVertices)
+        self.vertices = {}
         self.edges = [[0] * self.size for _ in range(self.size)]
         self.edgeIndices = {}
         self.getVertexData(listOfVertices)
@@ -27,7 +27,8 @@ class Graph:
                     self.vertices[index] = vertex
                     self.edgeIndices[vertex] = len(self.edgeIndices)
     
-
+##need to access weights from csv file 
+# that are relative to the index of 2 addresses in self.vertices
     def getEdgeWeight(self):
         vertexAddress = list(self.vertices.keys())
         
