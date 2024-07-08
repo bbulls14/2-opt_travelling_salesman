@@ -15,7 +15,7 @@ truckAddresses = truck1.packagesOnTruck
 
 graph = Graph(truckAddresses)
 
-graph.printGraph()
+graph.printMatrix()
 
 
 

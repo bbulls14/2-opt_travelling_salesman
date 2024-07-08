@@ -28,16 +28,16 @@ class Logistics:
         getDeadline = attrgetter('deadline')
         getAddress = attrgetter('address')
         for package in self.allPackages:
-            if '1060' in getAddress(package):
+            if endOfBusiness != getDeadline(package):
                 truck1.packagesOnTruck.append(getAddress(package))
-            elif '1330 2100' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
-            elif '1488 4800' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
-            elif '177 W' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
-            elif '195 W' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
+            # elif '1330 2100' in getAddress(package):
+            #     truck1.packagesOnTruck.append(getAddress(package))
+            # elif '1488 4800' in getAddress(package):
+            #     truck1.packagesOnTruck.append(getAddress(package))
+            # elif '177 W' in getAddress(package):
+            #     truck1.packagesOnTruck.append(getAddress(package))
+            # elif '195 W' in getAddress(package):
+            #     truck1.packagesOnTruck.append(getAddress(package))
             # if '9:05' in getSpecialNote(package):
             #     self.trucks[truck1] = package
             # if 'Can only be on truck 2' in getSpecialNote(package):

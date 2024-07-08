@@ -1,53 +1,72 @@
 import csv
 import heapq
+from operator import itemgetter
 from Package import Package
 
-HUB = 'HUB'
 
 class Vertex:
-    def __init__(self, address):
+    def __init__(self, address, index):
         self.address = address
+        self.index = index
+        self.next = None
 
 class Graph:
     def __init__(self, listOfVertices):
-        self.size = len(listOfVertices)
         self.vertices = {}
-        self.edges = [[0] * self.size for _ in range(self.size)]
+        self.edges = []
         self.edgeIndices = {}
         self.getVertexData(listOfVertices)
         self.getEdgeWeight()
 
     def getVertexData(self, listOfVertices):
+        listOfVertices.append('HUB')
         with open('Wgups Distances.csv', mode='r', encoding='UTF-8-sig') as file:
             csvFile = csv.reader(file, delimiter=',')
             for row in csvFile:
                 vertex = row[0]
                 index = row[1]
                 if vertex in listOfVertices:
-                    self.vertices[index] = vertex
-                    self.edgeIndices[vertex] = len(self.edgeIndices)
-    
-##need to access weights from csv file 
-# that are relative to the index of 2 addresses in self.vertices
+                    vertex = Vertex(vertex,index)
+                    self.vertices[vertex.address] = vertex.index
+                    for row in self.edges:
+                        row.append(0)
+                    self.edges.append([0] * (len(self.edges)+1))
+                    self.edgeIndices[vertex.address] = len(self.edgeIndices)
+        self.getEdgeWeight()
+
     def getEdgeWeight(self):
+        vertexIndex = list(self.vertices.values())
         vertexAddress = list(self.vertices.keys())
-        
+    
         with open('WGUPS Distances.csv', mode='r', encoding='UTF-8-sig') as file:
             csvFile = list(csv.reader(file, delimiter=','))
+            zeroEdge=0
             
-            for i, row in enumerate(csvFile):
-                if row[0] in vertexAddress:
-                    for j in range(1, len(row)):
-                        if csvFile[0][j] in vertexAddress:
-                            value = row[j]
-                            if j==0:
-                                continue
-                            if value:
-                                weight = float(value)
-                            else:
-                                weight = 0  
-                            if weight != 0:
-                                self.addEdge(vertexAddress[i], vertexAddress[j-1], weight)
+            
+            for i in range(len(vertexIndex)):
+                
+                index1 = vertexIndex[i]
+                    
+               
+                if index1 in csvFile[int(index1)-1][1]:
+                    
+                    
+                    for j in range(len(vertexIndex)):
+                        index2 = vertexIndex[j]
+                        if index2 == None:
+                            continue
+
+                        if index1 == index2:
+                            weight = float(0)
+                            self.addEdge(vertexAddress[zeroEdge], vertexAddress[zeroEdge], weight)
+                            zeroEdge+=1
+                            continue
+                        
+                        weight = float(csvFile[int(index2)-1][int(index1)+1])
+                        self.addEdge(vertexAddress[i], vertexAddress[j], weight)
+                        
+                    vertexIndex[i] = None
+                    
                     
     def addEdge(self, u, v, weight):
         if u in self.vertices and v in self.vertices:
@@ -57,7 +76,7 @@ class Graph:
         else:
             return False
 
-    def printGraph(self):
+    def printMatrix(self):
         print("Graph vertices and adjacency matrix:")
         for vertex in self.edgeIndices.items():
             print(f"Vertex: {vertex}")
