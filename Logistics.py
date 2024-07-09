@@ -21,31 +21,38 @@ class Logistics:
     #     return sortedDistances
         
     def choosePackagesForTrucks(self):
-        truck1 = Truck()
-        # truck2 = Truck()
-        # truck3 = Truck()
-        getID = attrgetter('packageID')
+        endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p').time()
+        tenThirtyDeadline = datetime.strptime('10:30 AM', '%I:%M %p').time()  # Changed 'PM' to 'AM'
+    
+        truck1Pkgs = []
+        truck1Count = 0
+        truck2Pkgs = []
+        truck2Count = 0
+        truck3Pkgs = []
+        truck3Count = 0
+    
         getDeadline = attrgetter('deadline')
+        getSpecialNote = attrgetter('specialNote')
         getAddress = attrgetter('address')
+    
         for package in self.allPackages:
-            # if endOfBusiness != getDeadline(package):
-            #     truck1.packagesOnTruck.append(getAddress(package))
-            if '1060' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
-            elif '1330 2100' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
-            elif '1488 4800' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
-            elif '177 W' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
-            elif '195 W' in getAddress(package):
-                truck1.packagesOnTruck.append(getAddress(package))
-            # if '9:05' in getSpecialNote(package):
-            #     self.trucks[truck1] = package
-            # if 'Can only be on truck 2' in getSpecialNote(package):
-            #     self.trucks[truck2] = package
-        
-        return truck1 
-            
-            
-   
+            if truck1Count < 16 and ((tenThirtyDeadline == getDeadline(package) and 'Delayed on flight' not in getSpecialNote(package)) or
+                                    ('Must be delivered with' in getSpecialNote(package)) or
+                                    getAddress(package) not in truck1Pkgs):
+                truck1Pkgs.append(getAddress(package))
+                truck1Count += 1
+            elif truck2Count < 16 and ((tenThirtyDeadline == getDeadline(package) and 'Delayed on flight' in getSpecialNote(package)) or
+                                        ('truck 2' in getSpecialNote(package)) or
+                                        getAddress(package) not in truck2Pkgs):
+                truck2Pkgs.append(getAddress(package))
+                truck2Count += 1
+            elif truck3Count < 16 and (endOfBusiness == getDeadline(package) or
+                                        getAddress(package) not in truck3Pkgs):
+                truck3Pkgs.append(getAddress(package))
+                truck3Count += 1
+    
+        return truck1Pkgs, truck2Pkgs, truck3Pkgs
+                
+ 
+    
+ 

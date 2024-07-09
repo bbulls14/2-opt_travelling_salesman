@@ -9,12 +9,20 @@ class Vertex:
         self.next = None
 
 class Matrix:
-    def __init__(self, listOfVertices):
+    def __init__(self):
         self.vertices = {}
         self.edges = []
         self.edgeIndices = {}
-        self.makeLocalMatrix(listOfVertices)
-        self.twoOptAlgo()
+        self.makeLocalMatrix()
+        
+    def printMatrix(self):
+        print("Graph vertices and adjacency matrix:")
+        for vertex in self.edgeIndices.items():
+            print(f"Vertex: {vertex}")
+        print("\nAdjacency matrix:")
+        for row in self.edges:
+            print(' '.join(map(str, row)))
+
 
     #lines 21-76 referenced from Oggi AI at 6:26-8:43 of https://www.youtube.com/watch?v=HDUzBEG1GlA&t=486s
     def makeLocalMatrix(self, listOfVertices):
@@ -36,7 +44,7 @@ class Matrix:
     def getEdgeWeight(self):
         vertexAddress = list(self.vertices.keys())
         vertexIndex = list(self.vertices.values())
-    
+
         with open('WGUPS Distances.csv', mode='r', encoding='UTF-8-sig') as file:
             csvFile = list(csv.reader(file, delimiter=','))
             
@@ -45,7 +53,7 @@ class Matrix:
                 
                 index1 = vertexIndex[i]
                     
-               
+                
                 if index1 in csvFile[int(index1)-1][1]:
                     
                     
@@ -74,13 +82,6 @@ class Matrix:
         else:
             return False
 
-    def printMatrix(self):
-        print("Graph vertices and adjacency matrix:")
-        for vertex in self.edgeIndices.items():
-            print(f"Vertex: {vertex}")
-        print("\nAdjacency matrix:")
-        for row in self.edges:
-            print(' '.join(map(str, row)))
 
     #modeled after Austin Buchanan in https://www.youtube.com/watch?v=UAEjUk0Zf90           
     def twoOptAlgo(self):
@@ -93,49 +94,64 @@ class Matrix:
         improved = True
         while improved:
             improved = False
-            
+                
             for i in range (n):
                 for j in range (i+1,n):
                     cur1 = (tour[i], tour[i+1])
                     cur2 = (tour[j], tour[(j+1)%n])
                     curLength = self.edges[i][i+1] + self.edges[j][(j+1)%n]
-                
+                    
                     new1 = (tour[i], tour[j])
                     new2 = (tour[i+1], tour[(j+1)%n])
                     newLength = self.edges[i][j] + self.edges[i+1][(j+1)%n]
-                
-                    if newLength < curLength:
-                        print("swap edges",cur1,cur2,"with",new1,new2)
                     
+                    if newLength < curLength:
+                            # print("swap edges",cur1,cur2,"with",new1,new2)
+                        
                         tour[i+1:j+1] = tour[i+1:j+1][::-1]
                         tourEdges = [(tour[i-1], tour[i]) for i in range (n)]
                         edgeDistances = [self.edges[tour[k - 1]][tour[k]] for k in range(n)]
+            
+        tourEdgesWithDistances = dict(zip(tourEdges,edgeDistances))
+        addressPath = self.addressesFromTour(tour)
+        orderedDistances = self.orderedEdgeDistances(tourEdges, tourEdgesWithDistances)
+        return addressPath, orderedDistances
+            
+        # referenced Sylvaus at https://stackoverflow.com/questions/64960368/how-to-order-tuples-by-matching-the-first-and-last-values-of-each-a-b-b-c
+    def orderedEdgeDistances(self, tourEdges, tourEdgesWithDistances):    
+            
+        adjMatrix = {edge[0]: edge for edge in tourEdges}
+            
+        start = 0
+            
+        orderedEdges = [adjMatrix.pop(start)]
+            
+        while adjMatrix:
+            orderedEdges.append(adjMatrix.pop(orderedEdges[-1][1]))
+            
+            
+        orderedDistances = []
+        for edge in orderedEdges:
+            if edge in tourEdgesWithDistances:
+                orderedDistances.append(tourEdgesWithDistances[edge])
+            
+            
+        return orderedDistances  
 
-        # orderedEdgeDistances = self.orderedEdgeDistances(edgeDistances, tourEdges)                
-        addressPath = self.addressesFromTourEdges(tour)
-        return addressPath, edgeDistances
-        
-        
-##NEED TO ORDER THE EDGES AND THEN ORDER THE EDGE DISTANCES ACCORDINGLY       
-    # def orderedEdgeDistances(self, edgeDistances, tourEdges):    
-    #     firstV: itemgetter = itemgetter(0)
-    #     # secondV: itemgetter = itemgetter(1)
-    #     orderedEdges = []
-    #     for i,j in enumerate(tourEdges[:]):
-    #         if firstV(tourEdges[j]) == 0:
-    #             orderedEdges[i] = (tourEdges[j])
-    #             if tourEdges[i:] == orderedEdges[i]:
-    #                 orderedEdges[i+1] = (tourEdges[i:], orderedEdges[i])
-    #     return edgeDistances
+                    
+                    
 
-    def addressesFromTourEdges(self, tour):
+    def addressesFromTour(self, tour):
         addresses = list(self.edgeIndices.keys())
         addressPath = []
         for index in tour:
             address = addresses[index]
             addressPath.append(address)
-        return addressPath
-        
+        return addressPath        
+            
+   
+if __name__ == '__main__':
+    Matrix.twoOptAlgo()            
         
 
                     

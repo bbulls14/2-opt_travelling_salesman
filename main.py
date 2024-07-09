@@ -1,22 +1,27 @@
 from operator import itemgetter
-from HashTable import HashTable
 from LocalAdjMatrix import Matrix
 from Logistics import Logistics
-from Package import Package
-from Truck import Truck
 
+emptyMatrix = Matrix()
 getAddresses: itemgetter = itemgetter(1)
 
 logistics = Logistics()
 
 
-truck1 = logistics.choosePackagesForTrucks()   
-truckAddresses = truck1.packagesOnTruck
-matrix = Matrix(truckAddresses)
-addressPath, distances = matrix.twoOptAlgo()
+truck1, truck2, truck3 = logistics.choosePackagesForTrucks() 
+emptyMatrix.twoOptAlgo(truck1)
 
-print(f"final address path: {addressPath}")
-print(f"distances for each edge: {distances}")
+
+print(f"final address path: {truck1Address}")
+print(f"distances for each edge: {truck1Distance}")
+truck2Address, truck2Distance = Matrix(truck2)
+print(f"final address path: {truck2Address}")
+print(f"distances for each edge: {truck2Distance}")
+truck3Address, truck3Distance = Matrix(truck3)
+print(f"final address path: {truck3Address}")
+print(f"distances for each edge: {truck3Distance}")
+
+
 
 
 
