@@ -1,5 +1,10 @@
 import csv
+from datetime import datetime
 from operator import itemgetter
+
+from Clock import Clock
+from Logistics import Logistics
+from Package import Package
 
 
 class Vertex:
@@ -13,7 +18,8 @@ class Matrix:
         self.vertices = {}
         self.edges = []
         self.edgeIndices = {}
-        self.makeLocalMatrix()
+        self.reverseEdgeIndices = {}
+        self.deadlines = {}
         
     def printMatrix(self):
         print("Graph vertices and adjacency matrix:")
@@ -23,10 +29,17 @@ class Matrix:
         for row in self.edges:
             print(' '.join(map(str, row)))
 
-
+    def localMatrix(self, listOfPackages):
+        self.createMatrixSetEdgeIndicesToAddress(listOfPackages)
+        return self.edges, self.edgeIndices, listOfPackages
+        
+        
     #lines 21-76 referenced from Oggi AI at 6:26-8:43 of https://www.youtube.com/watch?v=HDUzBEG1GlA&t=486s
-    def makeLocalMatrix(self, listOfVertices):
+    def createMatrixSetEdgeIndicesToAddress(self, listOfPackages):
+        self.deadlines = {pkg.address: pkg.deadline for pkg in listOfPackages}
+        listOfVertices = [getattr(obj, 'address') for obj in listOfPackages]
         listOfVertices.append('HUB')
+        
         with open('Wgups Distances.csv', mode='r', encoding='UTF-8-sig') as file:
             csvFile = csv.reader(file, delimiter=',')
             for row in csvFile:
@@ -39,9 +52,10 @@ class Matrix:
                         row.append(0)
                     self.edges.append([0] * (len(self.edges)+1))
                     self.edgeIndices[vertex.address] = len(self.edgeIndices)
-        self.getEdgeWeight()
-
-    def getEdgeWeight(self):
+        self.reverseEdgeIndices = {address: index for index, address in self.edgeIndices.items()}
+        self.updateMatrixWithEdgeWeight()
+        
+    def updateMatrixWithEdgeWeight(self):
         vertexAddress = list(self.vertices.keys())
         vertexIndex = list(self.vertices.values())
 
@@ -67,12 +81,13 @@ class Matrix:
                             self.addEdge(vertexAddress[zeroEdge], vertexAddress[zeroEdge], weight)
                             zeroEdge+=1
                             continue
-                        
-                        weight = float(csvFile[int(index2)-1][int(index1)+1])
+                        else:
+                            weight = float((csvFile[int(index2)-1][int(index1)+1]))
                         self.addEdge(vertexAddress[i], vertexAddress[j], weight)
                         
                     vertexIndex[i] = None
-        self.twoOptAlgo()
+        # addressPath, distances = self.twoOptAlgo()
+        # return addressPath, distances
                     
     def addEdge(self, u, v, weight):
         if u in self.vertices and v in self.vertices:
@@ -85,11 +100,11 @@ class Matrix:
 
     #modeled after Austin Buchanan in https://www.youtube.com/watch?v=UAEjUk0Zf90           
     def twoOptAlgo(self):
-        tour = list(self.edgeIndices.values())
+        tour = list((self.edgeIndices.values()))
         n = len(tour)
         tourEdges = [(tour[i-1], tour[i]) for i in range (n)]
         edgeDistances = [self.edges[tour[i - 1]][tour[i]] for i in range(n)]
-
+        
 
         improved = True
         while improved:
@@ -100,25 +115,58 @@ class Matrix:
                     cur1 = (tour[i], tour[i+1])
                     cur2 = (tour[j], tour[(j+1)%n])
                     curLength = self.edges[i][i+1] + self.edges[j][(j+1)%n]
+                    curPathCost = self.prioritizeDeadline(curLength,cur1, cur2)
                     
                     new1 = (tour[i], tour[j])
                     new2 = (tour[i+1], tour[(j+1)%n])
                     newLength = self.edges[i][j] + self.edges[i+1][(j+1)%n]
+                    newPathCost = self.prioritizeDeadline(newLength,new1,new2)
                     
-                    if newLength < curLength:
+                    if newPathCost < curPathCost:
                             # print("swap edges",cur1,cur2,"with",new1,new2)
                         
                         tour[i+1:j+1] = tour[i+1:j+1][::-1]
                         tourEdges = [(tour[i-1], tour[i]) for i in range (n)]
-                        edgeDistances = [self.edges[tour[k - 1]][tour[k]] for k in range(n)]
-            
+                        edgeDistances = [self.edges[tour[i - 1]][tour[i]] for i in range(n)] 
+                           
         tourEdgesWithDistances = dict(zip(tourEdges,edgeDistances))
-        addressPath = self.addressesFromTour(tour)
-        orderedDistances = self.orderedEdgeDistances(tourEdges, tourEdgesWithDistances)
+        orderedEdges, orderedDistances = self.orderedEdgesAndDistances(tourEdges, tourEdgesWithDistances)
+        addressPath = self.addressesFromTour(orderedEdges)
         return addressPath, orderedDistances
+    
+    def prioritizeDeadline(self,length, loc1, loc2):
+        totalCost = length
+
+        edge1A1 = self.reverseEdgeIndices.get(loc1[0])
+        edge1A2 = self.reverseEdgeIndices.get(loc1[1])
+ 
+        
+        edge2A1 = self.reverseEdgeIndices.get(loc2[0])
+        edge2A2 = self.reverseEdgeIndices.get(loc2[1])
+
+
+        pathAddresses = (edge1A1, edge1A2, edge2A1, edge2A2)
+
+
+        deadlinePenalty = 0
+
+        for address in pathAddresses:
+            if 'HUB' in address:
+                continue
+            if address in self.deadlines:
+                deadline = self.deadlines[address]
+                if deadline.time() == datetime.strptime('9:00 AM', '%I:%M %p').time():
+                    deadlinePenalty = -2  # 10 units per minute
+                elif deadline.time() == datetime.strptime('10:30 AM', '%I:%M %p').time():
+                    deadlinePenalty += -2   # 5 units per minute
+
+
+        totalCost += deadlinePenalty
+        return totalCost
+    
             
         # referenced Sylvaus at https://stackoverflow.com/questions/64960368/how-to-order-tuples-by-matching-the-first-and-last-values-of-each-a-b-b-c
-    def orderedEdgeDistances(self, tourEdges, tourEdgesWithDistances):    
+    def orderedEdgesAndDistances(self, tourEdges, tourEdgesWithDistances):    
             
         adjMatrix = {edge[0]: edge for edge in tourEdges}
             
@@ -127,8 +175,16 @@ class Matrix:
         orderedEdges = [adjMatrix.pop(start)]
             
         while adjMatrix:
-            orderedEdges.append(adjMatrix.pop(orderedEdges[-1][1]))
-            
+            lastEdge = orderedEdges[-1]
+            nextEdge = adjMatrix[lastEdge[1]]
+            penaltyLast = self.prioritizeDeadline(0, lastEdge, nextEdge)
+            penaltyNext = self.prioritizeDeadline(0, nextEdge, lastEdge)
+                
+            if penaltyNext < penaltyLast:
+                nextEdge = adjMatrix.pop(lastEdge[1])
+            else:
+                nextEdge = adjMatrix.pop(lastEdge[1])
+                orderedEdges.append(nextEdge) 
             
         orderedDistances = []
         for edge in orderedEdges:
@@ -136,13 +192,14 @@ class Matrix:
                 orderedDistances.append(tourEdgesWithDistances[edge])
             
             
-        return orderedDistances  
+        return orderedEdges, orderedDistances  
 
                     
                     
 
-    def addressesFromTour(self, tour):
+    def addressesFromTour(self, orderedEdges):
         addresses = list(self.edgeIndices.keys())
+        tour = [index for edge in orderedEdges for index in edge]
         addressPath = []
         for index in tour:
             address = addresses[index]
@@ -150,8 +207,14 @@ class Matrix:
         return addressPath        
             
    
-if __name__ == '__main__':
-    Matrix.twoOptAlgo()            
+# if __name__ == '__main__':
+#     logistics = Logistics()
+#     truck1, truck2, truck3 = logistics.choosePackagesForTrucks()
+#     matrix1 = Matrix()
+#     edges, indices, originalList = matrix1.localMatrix(truck1)
+#     addressPath, distances = matrix1.twoOptAlgo()
+#     print(f"final address path: {addressPath}")
+#     print(f"distances for each edge: {distances}")     
         
 
                     

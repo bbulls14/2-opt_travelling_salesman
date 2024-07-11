@@ -1,7 +1,7 @@
 import csv
 from datetime import datetime
 
-startTime = datetime.strptime(f'8:00 AM', '%H:%M %p').time()
+startTime = datetime.strptime(f'8:00 AM', '%H:%M %p')
 
 class Package(object):
     
@@ -34,9 +34,9 @@ class Package(object):
                 zipCode = row[4]
                 deadline = row[5]
                 if 'EOD' in deadline:
-                    deadline = datetime.strptime('4:00 PM', '%H:%M %p').time()
+                    deadline = datetime.strptime('4:00 PM', '%I:%M %p')
                 else:
-                    deadline = datetime.strptime(deadline, '%H:%M %p').time()
+                    deadline = datetime.strptime(deadline, '%I:%M %p')
                 weight = row[6]
                 specialNote = row[7]
                 status = "at the hub"
