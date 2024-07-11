@@ -22,7 +22,7 @@ class Logistics:
     def choosePackagesForTrucks(self):
         endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p')
         tenThirtyDeadline = datetime.strptime('10:30 AM', '%I:%M %p')
-        nineAMDeadline = datetime.strptime('9:30 AM', '%I:%M %p')
+        nineAMDeadline = datetime.strptime('9:00 AM', '%I:%M %p')
         
         
         truck1Pkgs = []
