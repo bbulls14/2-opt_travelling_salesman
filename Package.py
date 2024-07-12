@@ -1,6 +1,5 @@
 import csv
 from datetime import datetime
-
 startTime = datetime.strptime(f'8:00 AM', '%H:%M %p')
 
 class Package(object):

@@ -1,7 +1,6 @@
 from datetime import datetime
 from Package import Package
-from operator import attrgetter, itemgetter
-
+from AdjMatrix import Matrix
 from Truck import Truck
 
 class Logistics:
@@ -10,68 +9,72 @@ class Logistics:
         # self.hash_table = hash_table
         self.trucks = {}
         self.allPackages = Package.getPackageDataList() 
+
         
-    
-    # Lines 15-18 sourced from jamylak at https://stackoverflow.com/questions/10695139/sort-a-list-of-tuples-by-2nd-item-integer-value
-    # def sortPackagesForTrucks(self, listOfVertices):
-    #     distances = self.graph.dijkstra(listOfVertices)
-    #     sortedDistances = sorted(distances, key=itemgetter(0,1))
-        
-    #     return sortedDistances
-        
-    def choosePackagesForTrucks(self):
+    def organizePackages(self):
         endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p')
         tenThirtyDeadline = datetime.strptime('10:30 AM', '%I:%M %p')
         nineAMDeadline = datetime.strptime('9:00 AM', '%I:%M %p')
         
+        copyOfAllPackages = self.allPackages.copy()
         
-        truck1Pkgs = []
-        truck1Count = 0
-        truck2Pkgs = []
-        truck2Count = 0
-        truck3Pkgs = []
-        truck3Count = 0
-    
-        for package in self.allPackages:
+        onlyTruck2 = []
+        delayedOnFlight = []
+        mustBeTogether = []
+        byTenThirty = []
+        remainingPkgs = []
+        
+        index = 0
+        while index < len(copyOfAllPackages):
+            package = copyOfAllPackages[index]
             address = package.address
             deadline = package.deadline
             specialNote = package.specialNote
-
-            if truck1Count<16 and nineAMDeadline == deadline:
-                truck1Pkgs.append(package)
-                truck1Count+=1
+            pID = int(package.packageID)
+            
+            if 'truck 2' in specialNote or address in [p.address for p in onlyTruck2]:
+                onlyTruck2.append(copyOfAllPackages.pop(index))
+                continue
                 
-            elif truck2Count < 16 and (('Delayed on flight' in specialNote) or ('truck 2' in specialNote)
-                                        or ('410 S State St' in address) or ('300 State St' in address) or
-                                        [pkg for pkg in truck2Pkgs if pkg.address == address]):
-                truck2Pkgs.append(package)
-                truck2Count += 1    
-                
-            elif truck1Count < 16 and ((tenThirtyDeadline == deadline) or
-                                    ('Must be delivered with' in specialNote) or 
-                                    [pkg for pkg in truck1Pkgs if pkg.address == address]):
-                truck1Pkgs.append(package)
-                truck1Count += 1
+            if 'Delayed on flight' in specialNote or address in [p.address for p in delayedOnFlight]:
+                delayedOnFlight.append(copyOfAllPackages.pop(index))
+                continue
 
-            elif truck3Count < 16 and (endOfBusiness == deadline or
-                                    [pkg for pkg in truck3Pkgs if pkg.address == address]):
-                truck3Pkgs.append(package)
-                truck3Count += 1
-
-
-            else:
-                if truck1Count < 16:
-                    truck1Pkgs.append(package)
-                    truck1Count += 1
-                if truck2Count < 16:
-                    truck2Pkgs.append(package)
-                    truck2Count += 1
-                if truck3Count < 16:
-                    truck3Pkgs.append(package)
-                    truck3Count += 1
-                    
-        return truck1Pkgs, truck2Pkgs, truck3Pkgs
+            if 'Must be delivered with' in specialNote or pID in {13, 15, 19} or address in [p.address for p in mustBeTogether]:
+                mustBeTogether.append(copyOfAllPackages.pop(index))
+                continue
+            
+            if deadline < endOfBusiness or address in [p.address for p in byTenThirty]:
+                byTenThirty.append(copyOfAllPackages.pop(index))
+                continue
+            index += 1
+            
+        remainingPkgs = [p for p in copyOfAllPackages]        
+            
+            
+        return onlyTruck2, delayedOnFlight, mustBeTogether, byTenThirty, remainingPkgs
+          
+    # def mapAddressToDistance    
                 
  
+    def choosePackagesForTruck(self):
+        matrix = Matrix()
+        t2, flight, together, tenThirty, leftOvers = self.organizePackages()
+        matrix1 = matrix.matrixAttributes(t2)
+        
+ 
+        Truck1 = []
+        Truck2 = []
+        Truck3 = []
+        
+        tour, distance = matrix1.bestPathWith()
+        
+        #adjust 2optalgo to accept 2 lists, it will add edges from another list and swap them to determin the best path.         
+
+if __name__ == "__main__":
+    logistics = Logistics()
+
     
+    logistics.choosePackagesForTruck()
+    print('DONE')
  
