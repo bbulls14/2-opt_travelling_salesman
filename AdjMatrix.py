@@ -169,16 +169,7 @@ class Matrix:
         return addressPath    
     
             
-   
-# if __name__ == '__main__':
-#     logistics = Logistics()
-#     truck1, truck2, truck3 = logistics.choosePackagesForTrucks()
-#     matrix1 = Matrix()
-#     edges, indices, originalList = matrix1.localMatrix(truck1)
-#     addressPath, distances = matrix1.twoOptAlgo()
-#     print(f"final address path: {addressPath}")
-#     print(f"distances for each edge: {distances}")     
-        
+     
 
                     
 
