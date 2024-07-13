@@ -13,12 +13,18 @@ class TruckCounter(object):
         return next(cls.counters[truck])
     
 class Truck():
-    def __init__(self):
-        self.truckID = TruckCounter.getCounter(self.__class__)
-        self.numPackages = 0
-        self.packagesOnTruck = []
+    def __init__(self, packagesOnTruck):
+        self.truckID = TruckCounter.getCounter(self.__class__)+1
+        self.packagesOnTruck = packagesOnTruck
+        self.numPackages = len(packagesOnTruck)
         self.milesDriven = 0
-        self.departureTime = datetime.time(8,00,00)
+        if self.truckID == 1:
+            self.departureTime = '8:00 AM'
+        if self.truckID == 2:
+            self.departureTime = '9:05 AM'
+        if self.truckID == 3:
+            self.departureTime = '10:20 AM'
+        
 
     
     def __str__(self) -> str:

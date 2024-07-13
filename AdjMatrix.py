@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 
 from Clock import Clock
 
@@ -34,7 +35,15 @@ class Matrix:
     #self adjusts according to number and attributes of packages that are input
     def createMatrixSetEdgeIndicesToAddress(self, listOfPackages):
         #seperate deadlines into dictionary with address as key to reference in sorting algorithm
-        self.deadlines = {pkg.address: pkg.deadline for pkg in listOfPackages}
+        for pkg in listOfPackages:
+            deadline = pkg.deadline
+            if pkg.address in self.deadlines:
+                if deadline < self.deadlines[pkg.address]:
+                    self.deadlines[pkg.address] = deadline
+                    continue
+                else:
+                    continue
+            self.deadlines[pkg.address] = deadline
         
         #extract addresses from packages in listOfPackages, add 'HUB' to list
         listOfVertices = [getattr(obj, 'address') for obj in listOfPackages]
@@ -48,7 +57,7 @@ class Matrix:
                 if vertex in listOfVertices:
                     vertex = Vertex(vertex,index)
                     self.vertices[vertex.address] = vertex.index #store with index to access only needed distances 
-                    #extend length and width of matrix for each addition vertices
+                    #extend length and width of matrix for each additional vertices
                     for row in self.edges: 
                         row.append(0)
                     self.edges.append([0] * (len(self.edges)+1))
@@ -89,6 +98,8 @@ class Matrix:
                             zeroEdge+=1
                             continue
                         else:
+                            #decrement index2 because rows in file offset by 1
+                            #increment index1 because columns in file offset by 1 due to index column
                             weight = float((csvFile[index2-1][index1+1]))
                         #update edge to weight found at appropriate index in csv file
                         self.addEdge(vertexAddress[i], vertexAddress[j], weight)
@@ -107,20 +118,58 @@ class Matrix:
 
 
     #modeled after Austin Buchanan in https://www.youtube.com/watch?v=UAEjUk0Zf90           
-    def bestPath(self):
-        startTime = '8:00 AM'
-        clock = Clock(startTime)
+    def bestPath(self, truck):
         tour = list(self.edgeIndices.values())
+        tourAddresses = list(self.edgeIndices.keys())
         
         n = len(tour)
         
-        def calculateTourCost(tour):
-            totalCost = 0
+        def calculateTourDistance(tour):
+            totalDistance = 0
+            
             for i in range(n):
-                totalCost += self.edges[tour[i]][tour[(i + 1) % n]]
-            return totalCost
+                totalDistance += self.edges[tour[i]][tour[(i + 1) % n]]
+                
+            return totalDistance
+        
+        def meetDeadline(tour):
+            endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p')
+            tenThirtyDeadline = datetime.strptime('10:30 AM', '%I:%M %p')
+            nineAMDeadline = datetime.strptime('9:00 AM', '%I:%M %p')
+            startTime = truck.departureTime
+            clock = Clock(startTime)
+            
+            distanceTraveled = 0
 
-        currentCost = calculateTourCost(tour)
+            for i in range(n-1):
+                distance= self.edges[tour[i]][tour[(i + 1) % n]]
+                distanceTraveled += distance
+                clock.addMinutes((distance/18)*60)
+                
+                deadline = self.deadlines[self.reverseEdgeIndices[tour[i+1]]]
+
+                if deadline <= nineAMDeadline:
+                    if clock.getTime() <= nineAMDeadline:
+                        continue
+                    else:
+                        return False
+                if deadline <= tenThirtyDeadline:
+                    if clock.getTime() <= tenThirtyDeadline:
+                        continue
+                    else:
+                        return False
+                if deadline <= endOfBusiness:
+                    if clock.getTime() <= endOfBusiness:
+                        continue
+                    else:
+                        return False
+            return True  
+              
+        currentDistance = calculateTourDistance(tour)
+
+        bestTour = tour
+        bestDistance = currentDistance
+        
         improved = True
         
         while improved:
@@ -132,33 +181,38 @@ class Matrix:
 
                     # Create a new tour by reversing the segment between i and j
                     newTour = tour[:i] + tour[i:j + 1][::-1] + tour[j + 1:]
-                    newCost = calculateTourCost(newTour)
+                    newDistance = calculateTourDistance(newTour)
                     
-                    if newCost < currentCost:
+                    if meetDeadline(newTour):
                         tour = newTour
-                        current_cost = newCost
-                        improved = True
-
-        return tour, currentCost
+                        currentDistance = newDistance
+                        
+                        if newDistance < bestDistance:
+                            bestTour = newTour
+                            bestDistance = newDistance
+                            improved = True
+                            
+                        
+        return bestTour, bestDistance
 
      
     #getIndices function
         # referenced Sylvaus at https://stackoverflow.com/questions/64960368/how-to-order-tuples-by-matching-the-first-and-last-values-of-each-a-b-b-c
-        def orderedEdgesAndDistances(tourEdges, tourEdgesWithDistances):    
-                
-            adjMatrix = {edge[0]: edge for edge in tourEdges}   
-            start = 0  
-            orderedEdges = [adjMatrix.pop(start)]
-                
-            while adjMatrix:
-                orderedEdges.append(adjMatrix.pop(orderedEdges[-1][1]))
-                
-            orderedDistances = []
-            for edge in orderedEdges:
-                if edge in tourEdgesWithDistances:
-                    orderedDistances.append(tourEdgesWithDistances[edge])  
-                
-            return orderedDistances
+    def orderedEdgesAndDistances(tourEdges, tourEdgesWithDistances):    
+            
+        adjMatrix = {edge[0]: edge for edge in tourEdges}   
+        start = 0  
+        orderedEdges = [adjMatrix.pop(start)]
+            
+        while adjMatrix:
+            orderedEdges.append(adjMatrix.pop(orderedEdges[-1][1]))
+            
+        orderedDistances = []
+        for edge in orderedEdges:
+            if edge in tourEdgesWithDistances:
+                orderedDistances.append(tourEdgesWithDistances[edge])  
+            
+        return orderedDistances
 
 
     def addressesFromTour(self, tour):

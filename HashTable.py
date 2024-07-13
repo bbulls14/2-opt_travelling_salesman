@@ -100,33 +100,6 @@ class HashTable():
             return print(f"Package ID: {key} has no data")
         else:
             return bucket.bucketPackage 
-    
-    # def remove (self, key):
-    #     key = int(key)
-        
-    #     if key < 1 or key > self.size:
-    #         return print(f"{key} is an invalid packageID")
-                  
-        
-    #     bucketID = self.hash(key)
-    #     bucket = self.hashMap[bucketID]
-    #     prev = None
-        
-        
-    #     while bucket is not None and bucket.key != key:
-    #         prev = bucket
-    #         bucket = bucket.next
-            
-    #     if bucket is None:
-    #         return print(f"Package ID: {key} has no data")
-        
-    #     self.used -= 1
-    #     result = bucket.key
-    #     if prev is None:
-    #         self.hashMap[bucketID] = bucket.next
-    #     else:
-    #         prev.next = bucket.next
-    #     return result
         
     def __str__(self):
         output = []
@@ -143,9 +116,5 @@ class HashTable():
             key = int(package.packageID)
             self.insert(key)
             
-    def printKeyValuePairs(self):
-        for bucket in self.hashMap:
-            b = bucket
-            while b is not None:
-                b = b.next
+    # def updatePackageData(time):
         
