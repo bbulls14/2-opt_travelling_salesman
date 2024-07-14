@@ -120,7 +120,6 @@ class Matrix:
     #modeled after Austin Buchanan in https://www.youtube.com/watch?v=UAEjUk0Zf90           
     def bestPath(self, truck):
         tour = list(self.edgeIndices.values())
-        tourAddresses = list(self.edgeIndices.keys())
         
         n = len(tour)
         
@@ -191,9 +190,16 @@ class Matrix:
                             bestTour = newTour
                             bestDistance = newDistance
                             improved = True
-                            
-                        
-        return bestTour, bestDistance
+        
+        for i in range(n-1):
+            orderedDistance = []
+            distance = self.edges[bestTour[i]][bestTour[(i + 1) % n]]
+            orderedDistance.append(distance)  
+             
+        tourAddresses = self.addressesFromTour(bestTour)                 
+        truck.route = tourAddresses
+        truck.milesDriven = bestDistance                
+        return tourAddresses, orderedDistance
 
      
     #getIndices function

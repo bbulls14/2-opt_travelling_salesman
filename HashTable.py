@@ -1,5 +1,5 @@
-from Package import Package
-
+from Package import getPackageDataList
+from Truck import Truck
 INITIAL_CAPACITY = 40
 
 #referenced from PageKey at 6:19-10:17 of https://www.youtube.com/watch?v=zHi5v78W1f0&t=628s
@@ -20,7 +20,7 @@ class HashTable():
         self.size = INITIAL_CAPACITY
         self.hashMap = [None] * self.size
         self.used = 0
-        self.hashPackageData = Package.getPackageDataList()
+        self.hashPackageData = getPackageDataList()
         self.populateTable()
 
     #Direct mapping of packageID to key
@@ -116,5 +116,5 @@ class HashTable():
             key = int(package.packageID)
             self.insert(key)
             
-    # def updatePackageData(time):
+    def updatePkgSatus(timeObj, truck):
         

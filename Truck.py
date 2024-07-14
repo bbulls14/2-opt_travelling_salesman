@@ -24,6 +24,7 @@ class Truck():
             self.departureTime = '9:05 AM'
         if self.truckID == 3:
             self.departureTime = '10:20 AM'
+        self.route = []
         
 
     
