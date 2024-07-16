@@ -25,7 +25,7 @@ class Matrix:
         for row in self.edges:
             print(' '.join(map(str, row)))
 
-    #function to access matrixAttributes from packageList 
+    #function to build matrix from packageList 
     def matrixAttributes(self, listOfPackages):
         self.createMatrixSetEdgeIndicesToAddress(listOfPackages)
         return self
@@ -34,7 +34,7 @@ class Matrix:
     #referenced from Oggi AI at 6:26-8:43 of https://www.youtube.com/watch?v=HDUzBEG1GlA&t=486s
     #self adjusts according to number and attributes of packages that are input
     def createMatrixSetEdgeIndicesToAddress(self, listOfPackages):
-        #seperate deadlines into dictionary with address as key to reference in sorting algorithm
+        #seperate deadlines into dictionary with address as key to reference in bestPath and meetDeadline functions
         for pkg in listOfPackages:
             deadline = pkg.deadline
             if pkg.address in self.deadlines:
@@ -63,7 +63,7 @@ class Matrix:
                     self.edges.append([0] * (len(self.edges)+1))
                     #match vertex address to it's index in the matrix
                     self.edgeIndices[vertex.address] = len(self.edgeIndices)
-        #able to more easily reference index in matrix and map it to address 
+        #used for deadline list in meetDeadline()
         self.reverseEdgeIndices = {address: index for index, address in self.edgeIndices.items()}
         self.updateMatrixWithEdgeWeight()
     
@@ -98,8 +98,8 @@ class Matrix:
                             zeroEdge+=1
                             continue
                         else:
-                            #decrement index2 because rows in file offset by 1
-                            #increment index1 because columns in file offset by 1 due to index column
+                            #decrement index2 because rows in csvfile are offset by 1
+                            #increment index1 because columns in csvfile are offset by 1 due to index column
                             weight = float((csvFile[index2-1][index1+1]))
                         #update edge to weight found at appropriate index in csv file
                         self.addEdge(vertexAddress[i], vertexAddress[j], weight)
@@ -131,6 +131,7 @@ class Matrix:
                 
             return totalDistance
         
+        #check if the tour meets all deadline requirements for packages in the tour.
         def meetDeadline(tour):
             endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p')
             tenThirtyDeadline = datetime.strptime('10:30 AM', '%I:%M %p')
@@ -191,8 +192,8 @@ class Matrix:
                             bestDistance = newDistance
                             improved = True
         
+        orderedDistance = []
         for i in range(n-1):
-            orderedDistance = []
             distance = self.edges[bestTour[i]][bestTour[(i + 1) % n]]
             orderedDistance.append(distance)  
              

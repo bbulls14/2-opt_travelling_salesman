@@ -1,3 +1,5 @@
+from datetime import datetime
+from Clock import Clock
 from Package import getPackageDataList
 from Truck import Truck
 INITIAL_CAPACITY = 40
@@ -115,6 +117,6 @@ class HashTable():
         for package in self.hashPackageData:
             key = int(package.packageID)
             self.insert(key)
-            
-    def updatePkgSatus(timeObj, truck):
-        
+
+
+                                         

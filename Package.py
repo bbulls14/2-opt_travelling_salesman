@@ -45,7 +45,8 @@ def getPackageDataList():
                                 zipCode, deadline, weight, specialNote, status)
             packageData.append(package)
     return packageData
-    
+
+#iterate through package data and sort packages based on special notes, common addresses, and deadlines
 def organizePackages():
     endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p')
 
