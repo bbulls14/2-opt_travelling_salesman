@@ -1,117 +1,122 @@
-# import pandas lib as pd
-import pandas as pd
-from Package import Package
-
+from datetime import datetime
+from Clock import Clock
+from Package import getPackageDataList
+from Truck import Truck
 INITIAL_CAPACITY = 40
-class Node:
-    def __init__(self, key):
+
+#referenced from PageKey at 6:19-10:17 of https://www.youtube.com/watch?v=zHi5v78W1f0&t=628s
+class Bucket:
+    def __init__(self, key, bucketPackage):
         self.key = key
-        self.hashPackage = self.getHashMapPackageData(key)
         self.next = None
+        self.bucketPackage = bucketPackage
     
-    def getHashMapPackageData(self, key): 
-        data = pd.read_excel('WGUPS Package File.xlsx')
-        row = key+6
-        packageID = data.iloc[row,0]
-        address = data.iloc[row,1]
-        city = data.iloc[row,2]
-        zipCode = data.iloc[row,4]
-        deadline = data.iloc[row,5]
-        weight = data.iloc[row,6]
-        status = "at the hub"
-        return Package.forHashMap(packageID, address, city, zipCode, deadline, weight, status)
- 
+    def __str__(self):
+        if self.bucketPackage:
+            return (self.bucketPackage)
+        else:
+            return "No package data"
         
 class HashTable():
     def __init__(self):
         self.size = INITIAL_CAPACITY
-        self.buckets = [None] * self.size
+        self.hashMap = [None] * self.size
         self.used = 0
-        
+        self.hashPackageData = getPackageDataList()
+        self.populateTable()
+
+    #Direct mapping of packageID to key
+    #first package is first index in hashTable
     def hash(self, key):
-        return key -1
+        return key - 1
     
-    def insert (self, key):
-        self.used += 1
-        index = self.hash(key)
-        node = self.buckets[index]
+    #self-adjusting function to resize hashMap and update with existing buckets
+    def resize(self, newSize):
+        oldHashMap = self.hashMap
+
+        self.size = newSize
+        self.hashMap = [None] * self.size
+
+        for bucket in oldHashMap:
+            if bucket is not None:
+                self.rehash(bucket)
+    #function to update resized hashMap with existing buckets
+    def rehash(self, bucket):
+        bucketID = self.hash(bucket.key)
+        self.hashMap[bucketID] = bucket
+    
+    #insert using packageID
+    #includes self-Adjusting function to resize if used buckets equals size of hashMap
+    #try:catch to ensure that inserts for packageIDs are within range non-existant data     
+    def insert (self,key):
+        key = int(key)
+             
+        if key < 1:
+            return print(f"{key} is an invalid packageID")      
+
+        #catch Index out of Range
+        bucketID = self.hash(key)
+        try:
+            bd = self.hashPackageData[bucketID]
+            bucketPackage = (bd.address, bd.deadline, bd.city, bd.zipCode, bd.weight, bd.status)
+        except IndexError:
+            return print(f"IndexError: packageID {key} is not within package data range")
         
-        if node is None:
-            self.buckets[index] = Node(key)
+        self.used+=1
+        #self adjusts to double size if approaching capacity
+        if self.used >= self.size:
+            newSize = self.size * 2 
+            self.resize(newSize)
+             
+        bucket = self.hashMap[bucketID]
+        
+        if bucket is None:
+            self.hashMap[bucketID] = Bucket(key, bucketPackage)
             return
-        prev = node
         
-        while node is not None:
-            prev = node
-            node = node.next
-        prev.next = Node(key)
+        #handles collision by setting bucket to None and then reupdateing with existing data
+        #removes counter to maintain accurate used variable
+        while bucket is not None:
+            bucket = bucket.next     
+        bucket = Bucket(key, bucketPackage)
+        self.used-=1
+        return print(f"Collision: repopulated packageID {key} with existing data")
+
+
         
                 
     def find(self, key):
-        index = self.hash(key)
-        node = self.buckets[index]
-        
-        while node is not None and node.key != key:
-            node = node.next
-            
-        if node is None:
-            return None
-        else:
-            return node
-    
-    
-    def remove (self, key):
-        index = self.hash(key)
-        node = self.buckets[index]
-        
-        while node is not None and node.key != key:
-            prev = node
-            node = node.next
-            
-        if node is None:
-            return None
-        else:
-            self.used -= 1
-            result = node
-            if prev is None:
-                node = None
-            else:
-                prev.next = node.next
-                return result
-            
-  
-  
-  
-# if __name__ == "__main__":      
-
-#     hashTable = HashTable()
-    
-#     for row in range (7, 47):
-
-#         packageTraits = []
-#         for col in range (0, 7):
-#             packageTraits.append(packagesExcel.iat[row, col])
+        key = int(key)
+        if key < 1 or key > self.size:
+            return print(f"{key} is an invalid packageID")
                  
-
-#         package = Package.HashPackage(
-#             packageID = packageTraits[0],
-#             address = packageTraits[1],
-#             city = packageTraits[2],
-#             zipCode = packageTraits [3],
-#             deadline = packageTraits[5],
-#             weight = packageTraits[6],
-#             # specialNotes = packageTraits[7],
-#             status = "at the hub"
-#         )
-#         hashTable.insert(package)
         
+        bucketID = self.hash(key)
+        bucket = self.hashMap[bucketID]
+        
+        #handle collision by traversing through list if the bucket key doesnt equal the input key
+        while bucket is not None and bucket.key != key:
+            bucket = bucket.next
+            
+        if bucket is None:
+            return print(f"Package ID: {key} has no data")
+        else:
+            return bucket.bucketPackage 
+        
+    def __str__(self):
+        output = []
+        for buckets in self.hashMap:
+            bucket = buckets
+            while bucket is not None:
+                output.append(str(bucket.bucketPackage))
+                bucket = bucket.next
+        return "\n".join(output)
+    
+    
+    def populateTable(self):
+        for package in self.hashPackageData:
+            key = int(package.packageID)
+            self.insert(key)
 
-# for index, bucket in enumerate(hashTable.table):
-#     if bucket:
-#         print(f"Index {index + 1}: {bucket}")
 
-
-
-
-
-
+                                         
