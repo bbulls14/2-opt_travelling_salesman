@@ -1,5 +1,5 @@
 import itertools
-from datetime import datetime
+from datetime import datetime, timedelta
 from Clock import Clock
 
 
@@ -14,53 +14,31 @@ class TruckCounter(object):
     
 class Truck():
     def __init__(self, packagesOnTruck):
-        self.truckID = TruckCounter.getCounter(self.__class__)+1
+        self.truckID = TruckCounter.getCounter(self.__class__)
         self.packagesOnTruck = packagesOnTruck
         self.numPackages = len(packagesOnTruck)
         self.milesDriven = 0
+        if self.truckID == 0:
+            self.departureTime = datetime.strptime('8:00 AM', '%I:%M %p')
         if self.truckID == 1:
-            self.departureTime = '8:00 AM'
+            self.departureTime = datetime.strptime('9:05 AM', '%I:%M %p')
         if self.truckID == 2:
-            self.departureTime = '9:05 AM'
-        if self.truckID == 3:
-            self.departureTime = '10:20 AM'
+            self.departureTime = datetime.strptime('10:20 AM', '%I:%M %p')
         self.route = []
         self.orderedDistances = []
-        
 
     
     def __str__(self) -> str:
-        return (f"truckId: {self.truckID}, NumberofPackages: {self.numPackages}, Departure Time: {self.departureTime}")
+        return (f"truckId: {self.truckID}), NumberofPackages: {self.numPackages}, Departure Time: {self.departureTime}")
     
-#update status of ONE package
-def updateStatus(timeObj, pid, truck):
-    clock = Clock()
-    
-    if timeObj < truck.departureTime:
-        for pkg in truck.packagesOnTruck:
-            if pid == pkg.packageID:
-                pkg.status = "at the hub"
-                return
+ #order packages first, then iterate through them to update status, also update status in hashTable using find()   
+    def orderPackagesByRoute(self):
+        orderedPkgs = []
+        for route in self.route:
+            if route == 'HUB':
+                continue
+            for pkg in self.packagesOnTruck:
+                if route == pkg.address:
+                    orderedPkgs.append(pkg)
+        return orderedPkgs
 
-    while clock.getTime() < timeObj:
-        for i in range(len(truck.orderedDistances)):
-            distance = truck.orderedDistances[i]
-            timePassed = (distance / 18) * 60
-            clock.addMinutes(timePassed)
-            
-            for pkg in truck.packagesOnTruck:
-                pkgAddress = pkg.address
-                if pid == pkg.packageID:
-                    if truck.route[i + 1] == pkgAddress:
-                        if clock.getTime() < pkg.deadline:
-                            pkg.status = "delivered at " + str(clock.getTime())
-                            return
-                        else:
-                            pkg.status = "delivered late at " + str(clock.getTime())
-                            return
-
-    # If the loop completes and the package is still undelivered
-    for pkg in truck.packagesOnTruck:
-        if pid == pkg.packageID:
-            if clock.getTime() < timeObj:
-                pkg.status = "en route" 

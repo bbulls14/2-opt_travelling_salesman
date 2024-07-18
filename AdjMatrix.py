@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-
+from Truck import Truck
 from Clock import Clock
 
 class Vertex:
@@ -199,27 +199,27 @@ class Matrix:
              
         tourAddresses = self.addressesFromTour(bestTour)                 
         truck.route = tourAddresses
-        truck.milesDriven = bestDistance                
+        truck.milesDriven = bestDistance
         return tourAddresses, orderedDistance
 
      
     #getIndices function
         # referenced Sylvaus at https://stackoverflow.com/questions/64960368/how-to-order-tuples-by-matching-the-first-and-last-values-of-each-a-b-b-c
-    def orderedEdgesAndDistances(tourEdges, tourEdgesWithDistances):    
+    # def orderedEdgesAndDistances(tourEdges, tourEdgesWithDistances):    
             
-        adjMatrix = {edge[0]: edge for edge in tourEdges}   
-        start = 0  
-        orderedEdges = [adjMatrix.pop(start)]
+    #     adjMatrix = {edge[0]: edge for edge in tourEdges}   
+    #     start = 0  
+    #     orderedEdges = [adjMatrix.pop(start)]
             
-        while adjMatrix:
-            orderedEdges.append(adjMatrix.pop(orderedEdges[-1][1]))
+    #     while adjMatrix:
+    #         orderedEdges.append(adjMatrix.pop(orderedEdges[-1][1]))
             
-        orderedDistances = []
-        for edge in orderedEdges:
-            if edge in tourEdgesWithDistances:
-                orderedDistances.append(tourEdgesWithDistances[edge])  
+    #     orderedDistances = []
+    #     for edge in orderedEdges:
+    #         if edge in tourEdgesWithDistances:
+    #             orderedDistances.append(tourEdgesWithDistances[edge])  
             
-        return orderedDistances
+    #     return orderedDistances
 
 
     def addressesFromTour(self, tour):
@@ -229,6 +229,7 @@ class Matrix:
             addressPath.append(addresses[int(index)])
         return addressPath    
     
+
             
      
 

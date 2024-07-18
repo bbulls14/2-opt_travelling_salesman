@@ -82,8 +82,18 @@ class HashTable():
         self.used-=1
         return print(f"Collision: repopulated packageID {key} with existing data")
 
-
+    def update(self, key, status):        
+        key = int(key)
+        if key < 1 or key > self.used:
+            return print(f"{key} is an invalid packageID")
         
+        bucketID = self.hash(key)
+        bucket = self.hashMap[bucketID]
+        bucketPackageList = list(bucket.bucketPackage)
+        bucketPackageList[5] = status
+        
+        updatedBucket = tuple(bucketPackageList)
+        self.hashMap[bucketID] = Bucket(key, updatedBucket)
                 
     def find(self, key):
         key = int(key)
