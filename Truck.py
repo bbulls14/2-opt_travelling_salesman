@@ -1,6 +1,5 @@
 import itertools
-from datetime import datetime, timedelta
-from Clock import Clock
+from datetime import datetime
 
 
 # Incrementing ID (lines 6-12, 16) from selcuk at https://stackoverflow.com/questions/71520394/create-an-incremental-id-in-a-python-class-with-subclasses-each-maintaining-thei
@@ -13,10 +12,9 @@ class TruckCounter(object):
         return next(cls.counters[truck])
     
 class Truck():
-    def __init__(self, packagesOnTruck):
+    def __init__(self):
         self.truckID = TruckCounter.getCounter(self.__class__)
-        self.packagesOnTruck = packagesOnTruck
-        self.numPackages = len(packagesOnTruck)
+        self.packagesOnTruck = []
         self.milesDriven = 0
         if self.truckID == 0:
             self.departureTime = datetime.strptime('8:00 AM', '%I:%M %p')
@@ -29,13 +27,17 @@ class Truck():
 
     
     def __str__(self) -> str:
-        return (f"truckId: {self.truckID}), NumberofPackages: {self.numPackages}, Departure Time: {self.departureTime}")
+        return (f"truckId: {self.truckID}, Departure Time: {self.departureTime.strftime('%I:%M %p')}, Miles Driven: {"%.2f" % self.milesDriven}")
     
- #order packages first, then iterate through them to update status, also update status in hashTable using find()   
+ #flow: called at start of updatePkgsStatus in main.py  
+ #process: 
+ # 1. initialize empty list 
+ # 2. iterate through truck.route -> iterate through truck.packagesOnTruck and check if address matches truck.route address 
+ # 3. update orderedPkgs list if it does, otherwise, continue
     def orderPackagesByRoute(self):
         orderedPkgs = []
         for route in self.route:
-            if route == 'HUB':
+            if route == 'HUB':#skip because no package has this address
                 continue
             for pkg in self.packagesOnTruck:
                 if route == pkg.address:
