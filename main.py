@@ -20,7 +20,7 @@ hash = HashTable()
 # 1.organize packages by route 
 # 2. check if timeObj is later than truck's departure time, 
 #           a. if so calculate timeDif
-#           b. otherwise, the truck hasn't left the hub so set all packages status to at the hub at the timeObj
+#           b. otherwise, the truck hasn't left the hub so set all packages' status to 'at the hub' + timeObj
 # 3. calculate milesTraveled from timeObj
 # 4. check if milesTraveled are less than the truck.milesDriven (its current value is bestTour distance)
 #           a. update truck.milesDriven to approproiate miles traveled based on timeObj
@@ -28,18 +28,24 @@ hash = HashTable()
 #           b. update milesTraveled so that it doesn't exceed total milesDriven
 #6. iterate through ordered distances, update mileage upon each iteration.
 #           a. if mileage is less than milesTraveled the package was delivered, its status and time are updated
-#           b. otherwise, its status is en route and time is static
+#           b. otherwise, its status is en route and time is set to timeObj
+#Time Complexity is O(m * n), Space Complexity depends on timeObj, 
+#       a. m = number of routes in truck.routes, n = number of packages on truck
+#       b. if timeObj < truck.departureTime -> Time Complexity: O(m*n), Space Complexity: O(n) because it doesn't need to access orderedDistances list
+#       c. if timeObj is > truck.departure time -> the orderedDistance for loop has a Time/Space Complexity: O(m*n)
+#           i. truck.orderPackagesByRoute() has time complexity O(m * n) because it iterates through routes and packagesOnTruck, which vary in length
+#               ii.the truck.orderedDistances for loop is also O(m * n) because orderedDistances is equal to route - 1 (route includes 'HUB'). 
 def updatePkgsStatus(timeObj, truck):
-    truck.packagesOnTruck = truck.orderPackagesByRoute() #Time complexity: O(m*n)
-    pkgsOnTruck = truck.packagesOnTruck.copy() #Time Complexity: O(n)
+    truck.packagesOnTruck = truck.orderPackagesByRoute() #Time complexity: O(m*n), SpaceComplexity: O(n)
+    pkgsOnTruck = truck.packagesOnTruck.copy() #Time/Space Complexity: O(n)
     
     if timeObj >= truck.departureTime:   
         timeDif = (timeObj - truck.departureTime)
     else:
         truck.milesDriven = 0
-        for pkg in pkgsOnTruck:
+        for pkg in pkgsOnTruck: #Time/Space Complexity: O(n)
             pkg.status = "at the hub " + timeObj.strftime('%I:%M %p')
-            hash.update(pkg.packageID, pkg)
+            hash.update(pkg.packageID, pkg) #Time/Space Complexity: O(1)
         return
     
     milesTraveled = (timeDif.total_seconds()/3600)*18
@@ -50,13 +56,13 @@ def updatePkgsStatus(timeObj, truck):
    
         
     
-    def caculateDeliveryTime(mileage, departureTime): #Time Complexity: O(1)
+    def caculateDeliveryTime(mileage, departureTime): #Time/Space Complexity: O(1)
         startTime = departureTime
         timePassed = (mileage/18)*60
         duration = timedelta(minutes=timePassed)
         return startTime + duration
     
-    for i in range(len(truck.orderedDistances)): #Time Complexity: O(n)
+    for i in range(len(truck.orderedDistances)): #Time/Space Complexity: O(m * n)
         mileage += truck.orderedDistances[i]
         address = truck.route[i+1]
         deliveryTime = caculateDeliveryTime(mileage, truck.departureTime)
@@ -93,7 +99,7 @@ while True:
         break              
     except:
         print("\nInvalid Input, use the correct format for hour and minute.\nDon't forget the ':' and include AM or PM at the end\n")
-#initialize emptyTrucks
+#initialize empty Trucks
 truck1 = Truck()
 truck2 = Truck()
 truck3 = Truck()
@@ -101,21 +107,25 @@ truck3 = Truck()
 #flow: calls organizePackages() in Packages.py
 #process: 
 # 1. loads trucks with packages according to their requirements
-# 2. Uses timeObj to update hashtable and truck.packagesOnTruck if parameter is time-sensitive
+# 2. Uses timeObj to update hashtable and truck.packagesOnTruck if package attribute is time-sensitive (e.g. Delayed on Flight, Wrong address)
+#Time Complexity O(n^3) from both while loops, list.pop(arg), hash.update(), Space Complexity: O(n), n = len(allPackages)
 organizePackages(hash, timeObj, truck1, truck2, truck3)
 
 #flow: calls matrixAttributes() using organized truck.packagesOnTruck arg
-#process: creates a distance matrix only using distances for addresses found in packages on truck
+#process: creates a distance matrix only using distances for addresses of packages on truck
+#Time Complexity(r*(v+e)), Space Complexity: O(v^2) from edges being a 2d array of vertices
 matrix1 = matrix1.matrixAttributes(truck1.packagesOnTruck)
 matrix2 = matrix2.matrixAttributes(truck2.packagesOnTruck)
 matrix3 = matrix3.matrixAttributes(truck3.packagesOnTruck)
 
 #flow: calls bestTour() using truck arg
-#process: 1. calculates bestTour using two-opt algorithm 
+#process: 
+# 1. calculates bestTour using two-opt algorithm 
 # 2. returns ordered lists of addresses according to bestTour
 #       a. updates truck.milesDriven to be equal to total distance of bestTour 
 #       b. updates truck.orderedDistances to be an ordered lists of miles to each address
 #       c. updates truck.route to be an ordered list of addresses traveled in bestTour
+#Time Complexity: O(m*n^3), Space Complexity: O(v+n)
 matrix1.bestTour(truck1)
 matrix2.bestTour(truck2)
 matrix3.bestTour(truck3)
@@ -123,6 +133,7 @@ matrix3.bestTour(truck3)
 #flow: call updatePkgsStatus() in main.py using timeObj and truck object
 #process: 
 # 1. update status of packages on truck according to timeObj, package attributes, and truck route
+#Time Complexity is O(m * n), Space Complexity depends on timeObj, 
 updatePkgsStatus(timeObj, truck1)
 updatePkgsStatus(timeObj, truck2)
 updatePkgsStatus(timeObj, truck3)
@@ -148,13 +159,15 @@ if num == '1':
             break
         except:
             print('Please enter a valid packageID\n')
-    print(str(hash.find(pid)))
+    print(str(hash.find(pid))) #Time Complexity: O(n) b/c of collision management
+    
 #print all packages and their totalMiles traveled
+#Time Complexity: O(n^2), Space Complexity: O(n)
 if num == '2':
     print(f"Truck 1: \n{truck1}")
-    for pkgs in truck1.packagesOnTruck:
+    for pkgs in truck1.packagesOnTruck:#Time/Space Complexity: O(n)
         pid = pkgs.packageID
-        print(f"{str(hash.find(pid))} \n")
+        print(f"{str(hash.find(pid))} \n")#Time Complexity: O(n) b/c of collision management
     print(f"Truck 2: \n{truck2}")
     for pkgs in truck2.packagesOnTruck:
         pid = pkgs.packageID

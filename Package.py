@@ -26,12 +26,13 @@ class Package(object):
 # 3. obtains attributes of package by iterating through rows 
 # 4. creates package objects for each iteration 
 # 5. appends PackageData with package object
+#Time/Space complexity: O(n)
 def getPackageDataList():
-    packageData = []
+    packageData = [] #Space Complexity: O(n)
     with open('WGUPS Packages.csv', mode = 'r', encoding='UTF-8-sig') as file:
         csvFile = csv.reader(file, delimiter=',')
         next(csvFile)
-        for row in (csvFile):
+        for row in (csvFile): #Time complexity: O(n)
             packageID = row[0]
             address = row[1]
             city = row[2]
@@ -57,11 +58,15 @@ def getPackageDataList():
 # 1. create list allPackages using getPackageData 
 # 2. Iterate through list, pop pkg out, sort into truck.packagesOnTruck based on pkg attributes or if address matches another address in list
 # 3. packages without special considerations are sorted onto trucks as long as the number of packages on the truck is less than 16
-
+#Time Complexity O(n^3) from both while loops, list.pop(arg), hash.update(), Space Complexity: O(n), n = len(allPackages)
+#       a. allPackages has a Time/space complexity of O(n) 
+#       b. both while loops combined have a Time Complexity: O(n), because the second while loop only iterates for packages leftover from the first while loop
+#       c. because .pop() uses an argument, each time it is called is Time Complexity: O(n)
+#       d. because each hash.update() uses collision management which iterates through the list if the key is wrong, worst case Time Complexity can be O(n)
 def organizePackages(hash, timeObj, truck1, truck2, truck3):
     endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p')
 
-    allPackages = getPackageDataList()
+    allPackages = getPackageDataList() #Time/Space Complexity: O(n)
 
     
     index = 0
@@ -74,18 +79,19 @@ def organizePackages(hash, timeObj, truck1, truck2, truck3):
         
         if 'Wrong address' in specialNote:
             if timeObj < truck3.departureTime:
-                pkg = allPackages.pop(index)
-                truck3.packagesOnTruck.append(pkg)
+                pkg = allPackages.pop(index) #Time Complexity for EACH pop(): O(n)
+                truck3.packagesOnTruck.append(pkg) # Time Complexity of EACH append() for each truck: O(1)
             else:
                 pkg = allPackages.pop(index)
                 pkg.address = '410 S State St'
                 pkg.zipCode = '84111'
                 pkg.specialNote = 'Address corrected'
-                truck3.packagesOnTruck.append(pkg)
-                hash.update(pkg.packageID, pkg)
+                truck3.packagesOnTruck.append(pkg) 
+                hash.update(pkg.packageID, pkg) #Time Complexity for EACH update to hash: O(n) due to collision management, Space Complexity: O(1)
             continue
         
-        if 'truck 2' in specialNote or address in [p.address for p in truck2.packagesOnTruck]:
+        #Time/Space Complexity: O(1) because specialNote packagesOnTruck are bounded
+        if 'truck 2' in specialNote or address in [p.address for p in truck2.packagesOnTruck]: 
             pkg = allPackages.pop(index)
             truck2.packagesOnTruck.append(pkg)
             continue
@@ -99,7 +105,7 @@ def organizePackages(hash, timeObj, truck1, truck2, truck3):
                 truck2.packagesOnTruck.append(pkg)
                 hash.update(pkg.packageID, pkg)
             continue
-
+        #Time/Space Complexity: O(1) because specialNote, pID,  packagesOnTruck are bounded
         if 'Must be delivered with' in specialNote or pID in {13, 15, 19} or address in [p.address for p in truck1.packagesOnTruck]:
             pkg = allPackages.pop(index)
             truck1.packagesOnTruck.append(pkg)
