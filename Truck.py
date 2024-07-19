@@ -34,6 +34,8 @@ class Truck():
  # 1. initialize empty list 
  # 2. iterate through truck.route -> iterate through truck.packagesOnTruck and check if address matches truck.route address 
  # 3. update orderedPkgs list if it does, otherwise, continue
+ #Space Complexity: O(n)
+ #Time Complexity: O(m * n)
     def orderPackagesByRoute(self):
         orderedPkgs = []
         for route in self.route:

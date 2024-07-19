@@ -30,8 +30,8 @@ hash = HashTable()
 #           a. if mileage is less than milesTraveled the package was delivered, its status and time are updated
 #           b. otherwise, its status is en route and time is static
 def updatePkgsStatus(timeObj, truck):
-    truck.packagesOnTruck = truck.orderPackagesByRoute()
-    pkgsOnTruck = truck.packagesOnTruck.copy()
+    truck.packagesOnTruck = truck.orderPackagesByRoute() #Time complexity: O(m*n)
+    pkgsOnTruck = truck.packagesOnTruck.copy() #Time Complexity: O(n)
     
     if timeObj >= truck.departureTime:   
         timeDif = (timeObj - truck.departureTime)
@@ -50,13 +50,13 @@ def updatePkgsStatus(timeObj, truck):
    
         
     
-    def caculateDeliveryTime(mileage, departureTime):
+    def caculateDeliveryTime(mileage, departureTime): #Time Complexity: O(1)
         startTime = departureTime
         timePassed = (mileage/18)*60
         duration = timedelta(minutes=timePassed)
         return startTime + duration
     
-    for i in range(len(truck.orderedDistances)):
+    for i in range(len(truck.orderedDistances)): #Time Complexity: O(n)
         mileage += truck.orderedDistances[i]
         address = truck.route[i+1]
         deliveryTime = caculateDeliveryTime(mileage, truck.departureTime)
