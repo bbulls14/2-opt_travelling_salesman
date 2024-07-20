@@ -1,11 +1,12 @@
+### Blake Bulls 011249334
+
 from datetime import datetime, timedelta
 from HashTable import HashTable
 from DistanceMatrix import Matrix
 from Package import organizePackages
 from Truck import Truck
 
-endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p')
-startOfBusiness = datetime.strptime('8:00 AM', '%I:%M %p')
+ 
 
 #Flow: HashTable is initialized with package data obtained from Package.py
 #process: 
@@ -64,9 +65,10 @@ def updatePkgsStatus(timeObj, truck):
     
     for i in range(len(truck.orderedDistances)): #Time/Space Complexity: O(m * n)
         mileage += truck.orderedDistances[i]
-        address = truck.route[i+1]
+        address = truck.route[(i+1)%len(truck.route)] 
         deliveryTime = caculateDeliveryTime(mileage, truck.departureTime)
-        
+        if address == 'HUB' and len(pkgsOnTruck) == 0:
+            truck.returnedTime = deliveryTime
         if mileage < milesTraveled:
             while 0 < len(pkgsOnTruck):
                 pkg = pkgsOnTruck[0]
@@ -136,7 +138,13 @@ matrix3.bestTour(truck3)
 #Time Complexity is O(m * n), Space Complexity depends on timeObj, 
 updatePkgsStatus(timeObj, truck1)
 updatePkgsStatus(timeObj, truck2)
-updatePkgsStatus(timeObj, truck3)
+
+#only update truck3 if truck1 or truck2 returned before truck3's departure time
+unableToDeliver = True
+if truck1.returnedTime <= truck3.departureTime or truck2.returnedTime <= truck3.departureTime:
+    updatePkgsStatus(timeObj, truck3)
+    unableToDeliver = False
+ 
 
 print('\n1. Look up a Package')
 print('2. View All Packages\n')
@@ -172,10 +180,16 @@ if num == '2':
     for pkgs in truck2.packagesOnTruck:
         pid = pkgs.packageID
         print(f"{str(hash.find(pid))} \n")
-    print(f"Truck 3: \n{truck3}")
-    for pkgs in truck3.packagesOnTruck:
-        pid = pkgs.packageID
-        print(f"{str(hash.find(pid))} \n")
+    #only print truck 3 info if it was able to deliver 
+    # (i.e. truck1 or truck2 returned to the hub before truck3's departure time)
+    if unableToDeliver:
+        truck3.milesDriven = 0
+        print(f"Truck 3 was unable to deliver due to no drivers available")
+    else:
+        print(f"Truck 3: \n{truck3}")
+        for pkgs in truck3.packagesOnTruck:
+            pid = pkgs.packageID
+            print(f"{str(hash.find(pid))} \n")
     totalMiles = truck1.milesDriven + truck2.milesDriven + truck3.milesDriven
     print(f"Time: {timeObj.strftime('%I:%M %p')}\nTotal Miles Driven: {"%.2f" % totalMiles}")
         

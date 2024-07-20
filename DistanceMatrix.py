@@ -215,27 +215,25 @@ class Matrix:
         while improved: #Time Complexity O(m), difficult to determine b/c depends on tour and distances 
             improved = False
             #start range at 1 so that 0 is always start and end
-            for i in range(1, n - 1): #Time Complexity: O(n)
+            for i in range(1, n-1): #Time Complexity: O(n)
                 for j in range(i + 1, n): #Time Complexity: O(n)
-                    if j - i == 1:
-                        continue # Skip adjacent edges
 
-                    # Create a new tour by reversing the segment between i and j
+                    # Create a new tour by swapping i and j
                     newTour = tour[:i] + tour[i:j + 1][::-1] + tour[j + 1:] #Time Complexity: O(n)
                     
                     newDistance = calculateTourDistance(newTour) #Time Complexity: O(n)
                     
-                    if meetDeadline(newTour): #Time Complexity: O(n)
+                    if newDistance < bestDistance: #Time Complexity: O(n)
                         tour = newTour
                         currentDistance = newDistance
                         
-                        if newDistance < bestDistance:
+                        if meetDeadline(newTour):    
                             bestTour = newTour
                             bestDistance = newDistance
 
                             improved = True
         
-        for i in range(n-1): #Time/Space Complexity: O(n)
+        for i in range(n): #Time/Space Complexity: O(n)
             distance = self.edges[bestTour[i]][bestTour[(i + 1) % n]]
             truck.orderedDistances.append(distance)  
         

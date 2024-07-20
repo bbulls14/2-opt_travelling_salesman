@@ -24,6 +24,7 @@ class Truck():
             self.departureTime = datetime.strptime('10:20 AM', '%I:%M %p')
         self.route = []
         self.orderedDistances = []
+        self.returnedTime = None
 
     
     def __str__(self) -> str:
