@@ -1,5 +1,4 @@
-### Blake Bulls 011249334
-
+### Blake Bulls StudentID: 011249334
 from datetime import datetime, timedelta
 from HashTable import HashTable
 from DistanceMatrix import Matrix
@@ -145,6 +144,34 @@ if truck1.returnedTime <= truck3.departureTime or truck2.returnedTime <= truck3.
     updatePkgsStatus(timeObj, truck3)
     unableToDeliver = False
  
+pkgsGroupedTogether = False
+pkgsMustBeDeliveredTogether = {'13', '14', '15', '16', '19', '20'}
+
+pkgsOnTruck2 = False
+pkgsMustBeOnTruck2 = {'3', '18', '36', '38'}
+
+delayedPkgsLeaveOnTime = False
+pkgsDelayedByFlight = {'6', '25', '28', '32'}
+
+wrongAddressCorrected = False
+
+#Time Complexity for each if statement is O(n)
+if (set(pkgsMustBeDeliveredTogether).issubset(pkg.packageID for pkg in truck1.packagesOnTruck) or 
+    set(pkgsMustBeDeliveredTogether).issubset(pkg.packageID for pkg in truck2.packagesOnTruck) or
+    set(pkgsMustBeDeliveredTogether).issubset(pkg.packageID for pkg in truck3.packagesOnTruck)):
+    pkgsGroupedTogether = True
+
+if set(pkgsMustBeOnTruck2).issubset(pkg.packageID for pkg in truck2.packagesOnTruck):
+    pkgsOnTruck2 = True
+    
+if (set(pkgsDelayedByFlight).issubset(pkg.packageID for pkg in truck2.packagesOnTruck) 
+    and truck2.departureTime >= datetime.strptime('9:05 AM', '%I:%M %p')):
+    delayedPkgsLeaveOnTime = True
+
+#Time Complexity: O(n)
+for pkg in truck3.packagesOnTruck:
+    if pkg.packageID == '9' and pkg.specialNote == 'Address corrected':
+        wrongAddressCorrected = True
 
 print('\n1. Look up a Package')
 print('2. View All Packages\n')
@@ -192,4 +219,19 @@ if num == '2':
             print(f"{str(hash.find(pid))} \n")
     totalMiles = truck1.milesDriven + truck2.milesDriven + truck3.milesDriven
     print(f"Time: {timeObj.strftime('%I:%M %p')}\nTotal Miles Driven: {"%.2f" % totalMiles}")
-        
+    if pkgsGroupedTogether:
+        print(f"Packages 13, 14, 15, 16, 19, 20 are all grouped together")
+    else:
+        print(f"WARNING: Packages 13, 14, 15, 16, 19, 20 are not grouped together") 
+    if pkgsOnTruck2:
+        print("Packages 3, 18, 36, 38 are all on truck 2")
+    else:
+        print('WARNING: Packages 3, 18, 36, 38 are not on truck 2')
+    if delayedPkgsLeaveOnTime:
+        print("Packages 6, 25, 28, 32 have left on time")
+    else:
+        print("WARNING: Packages 6, 25, 28, 32 have not left on time")  
+    if wrongAddressCorrected:
+        print("Wrong address for package 9 has been corrected")
+    else:
+        print("WARNING: Wrong address for package 9 has not updated") 

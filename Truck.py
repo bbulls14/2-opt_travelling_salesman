@@ -2,7 +2,7 @@ import itertools
 from datetime import datetime
 
 
-# Incrementing ID (lines 6-12, 16) from selcuk at https://stackoverflow.com/questions/71520394/create-an-incremental-id-in-a-python-class-with-subclasses-each-maintaining-thei
+###lines 6-12, 16 - (Create an Incremental ID in a Python Class with Subclasses Each Maintaining Their Own ID Series, n.d.)
 class TruckCounter(object):
     counters = {}
 
