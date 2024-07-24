@@ -1,6 +1,5 @@
 import csv
 from datetime import datetime
-from Truck import Truck
 from Clock import Clock
 
 class Vertex:
@@ -11,11 +10,14 @@ class Vertex:
 
 class Matrix:
     def __init__(self):
-        self.vertices = {}
-        self.edges = []
-        self.edgeIndices = {}
-        self.reverseEdgeIndices = {}
-        self.deadlines = {}
+        self.vertices = {} #{k = vertex.address, v = index of row in csvFile}
+       
+        #SpaceComplexity: O(v^2), v = number of vertices in self.vertices
+        self.edges = [] #2d array of distances
+        
+        self.edgeIndices = {} #{k = address, v = index in self.edges}
+        self.reverseEdgeIndices = {} #{k = index in self.edges, v = address}
+        self.deadlines = {} #{k = address, v = deadline(datetime object)}
         
     def printMatrix(self):
         print("Graph vertices and adjacency matrix:")
@@ -36,7 +38,6 @@ class Matrix:
         return self
         
         
-#referenced lines (50-77, 87-118, and 125 - 131) from Oggi AI at 6:26-8:43 of https://www.youtube.com/watch?v=HDUzBEG1GlA&t=486s    
     #flow: called by matrixAttributes in DistanceMatrix.py 
     # 1. initializes dictionary with addresses and deadlines from listOfPackages arg
     #          a. this is referenced in meetDeadline() which is an embedded function within bestTour() in DistanceMatrix.py 
@@ -72,10 +73,11 @@ class Matrix:
             for row in csvFile: #Time/Space Complexity: O(r)
                 vertex = row[0]
                 index = row[1]
+###lines 78-84, 108-129 - (Oggi AI - Artificial Intelligence Today, 2016)    
                 if vertex in listOfVertices: #Time Complexity O(v)
                     vertex = Vertex(vertex,index) 
                     self.vertices[vertex.address] = vertex.index #Space Complexity O(v)
-                    for row in self.edges: #Time Complexity O(e), Space Complexity: O(v)
+                    for row in self.edges: #Time Complexity O(e)
                         row.append(0)
                     self.edges.append([0] * (len(self.edges)+1)) #Space Complexity: O(v^2) b/c 2d array
                     self.edgeIndices[vertex.address] = len(self.edgeIndices) #Time complexity: O(1), Space Complexity: O(v)
@@ -95,7 +97,7 @@ class Matrix:
     #       a. v = number of vertices, r = number of rows in csvFile, c = number of columns in csvFile
     #       b. includes addEdge(), which has a Time/Space Complexity: O(1)
     def updateMatrixWithEdgeWeight(self):
-
+###lines 108-129 - (Oggi AI - Artificial Intelligence Today, 2016)  
         vertexAddress = list(self.vertices.keys()) #Time/Space Complexity O(v)
         vertexIndex = list(self.vertices.values()) #Time/Space Complexity O(v)
 
@@ -133,6 +135,7 @@ class Matrix:
     # 2. update weight in self.edges using indices from edgeIndices that have the address (e.g. u, v) as the key 
     # 3. update itself and its mirror (e.g. (0,1)==(1,0), (2,5)==(5,2)) with weight from Distances csvFile
     #Time/Space Complexity: O(1)
+###lines 140-146 - (Oggi AI - Artificial Intelligence Today, 2016)    
     def addEdge(self, u, v, weight):
         if u in self.vertices and v in self.vertices: #Time Complexity: O(1) b/c dict
             self.edges[self.edgeIndices[u]][self.edgeIndices[v]] = weight
@@ -142,7 +145,7 @@ class Matrix:
             return False
 
 
-#referenced lines (201-220) from rrz0 at https://stackoverflow.com/questions/53275314/2-opt-algorithm-to-solve-the-travelling-salesman-problem-in-python
+###lines 201-220 - (2-Opt Algorithm to Solve the Travelling Salesman Problem in Python, n.d.)
     #flow:called from main.py after trucks are loaded and weighted local adj matrix is made 
     #  
     #process: 
@@ -160,7 +163,7 @@ class Matrix:
     #       c. truck.milesDriven is updated with total distance traveled in bestTour
     #Time Complexity: O(m*n^3), Space Complexity: O(v+n)
     #       b. m = number of times while loop iterates, n = length of tour, v = number of vertices which is equal to len(edgeIndices)
-    #       a. space complexity takes into account the addresses from tour function called at the end 
+    #       a. space complexity takes into account the addressesFromTour() function called at the end 
     def bestTour(self, truck):
         tour = list(self.edgeIndices.values()) #Time/Space Complexity: O(v)
         
@@ -210,7 +213,7 @@ class Matrix:
 
         bestTour = tour
         bestDistance = currentDistance
-        
+###lines 218-242 - (2-Opt Algorithm to Solve the Travelling Salesman Problem in Python, n.d.)        
         improved = True
         while improved: #Time Complexity O(m), difficult to determine b/c depends on tour and distances 
             improved = False

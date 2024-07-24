@@ -1,21 +1,23 @@
+from datetime import datetime
 from Package import getPackageDataList
 INITIAL_CAPACITY = 40
 
-#referenced lines 5-9, 19-23, 51-83, 107-123 from PageKey at 6:19-10:17 of https://www.youtube.com/watch?v=zHi5v78W1f0&t=628s
+###lines 5-11 (PageKey, 2017)
 class Bucket:
     def __init__(self, key, bucketPackage):
-        self.key = key
+        self.key = key #packageID
         self.next = None
+        #tuple(address, deadline, city, zipCode, weight, status)
         self.bucketPackage = bucketPackage
     
     def __str__(self):
         if self.bucketPackage:
             bp = self.bucketPackage
-
-            return (f"PackageID: {self.key}, Address: {bp[0]}, Status: {bp[5]} ")
+            deadlineStr = datetime.strftime(bp[1], "%I:%M %p")
+            return (f"PackageID: {self.key}, Address: {bp[0]}, Deadline: {deadlineStr}, Status: {bp[5]} ")
         else:
             return "No package data"
-        
+### lines 21-25 (PageKey, 2017)        
 class HashTable():
     def __init__(self):
         self.size = INITIAL_CAPACITY
@@ -55,6 +57,7 @@ class HashTable():
     #               when it's called the Time/Space Complexity is O(2n) because the hashMap doubles in size
     #       b. when resize is not called, the Time Complexity is O(n) because of collision management 
     #               and Space Complexity is O(1)
+### 61-93 (PageKey, 2017)   
     def insert (self,key):
         key = int(key)
              
@@ -120,6 +123,7 @@ class HashTable():
 
     #look-up bucket using packageID    
     #Time complexity: O(n) because of collision management, Space Complexity: O(1) because bucketPackage is a fixed length of 6            
+### lines 127-143 (PageKey, 2017)    
     def find(self, key):
         key = int(key)
         if key < 1 or key > self.size:

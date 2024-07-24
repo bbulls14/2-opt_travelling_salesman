@@ -15,6 +15,7 @@ class Package(object):
         self.weight = weight
         self.specialNote = specialNote
         self.status = status
+
     
     def __str__(self):
         return (f"PackageID: {self.packageID}, Address: {self.address}, City: {self.city}, ZipCode: {self.zipCode} Deadline: {self.deadline}, Weight: {self.weight}, Status: {self.status}")
