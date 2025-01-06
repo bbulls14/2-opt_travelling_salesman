@@ -31,8 +31,6 @@ class Matrix:
     #process: 
     # 1. calls chain of functions (createMatrixSetEdgeIndicesToAddress(), updateMatrixWithEdgeWeight(), addEdge()) 
     # 2. returns an updated local Distance Matrix
-    #Time Complexity: O(r*(v+e)) + O(v^2), Space Complexity: O(v^2) + O(r*c)
-    #       a. r = number of rows in csvFile, c = number of columns in csvFile, v = number of vertices, e = len(self.edges)
     def matrixAttributes(self, listOfPackages):
         self.createMatrixSetEdgeIndicesToAddress(listOfPackages)
         return self
@@ -49,41 +47,37 @@ class Matrix:
     #          e. store the vertex location within self.edges in self.edgeIndices, set key to vertex.address and value to the row/column that vertex resides at
     # 4. create a reversed dictionary of edgeIndices, to more easily reference in meetDeadline() 
     # 5. call updateMatrixWithEdgeWeight()
-    #Time Complexity(r*(v+e)), Space Complexity: O(v^2) from edges being a 2d array of vertices
-    #       a. r = number of rows in csvFile, c = number of columns in csvFile, v = number of vertices, e = len(self.edges)
-    #       b. Time/Space Complexity including updateMatrixWithEdgeWeight()
-    #               i. Time: O(r*(v+e)) + O(v^2), Space: O(v^2) + O(r*c)
+    
     def createMatrixSetEdgeIndicesToAddress(self, listOfPackages):
-        for pkg in listOfPackages: #Time Complexity: O(n) 
+        for pkg in listOfPackages: 
             deadline = pkg.deadline
-            if pkg.address in self.deadlines: #Time complexity O(1) b/c dict
+            if pkg.address in self.deadlines:
                 if deadline < self.deadlines[pkg.address]:
-                    self.deadlines[pkg.address] = deadline #using avg case, Time Complexity: O(1)
+                    self.deadlines[pkg.address] = deadline
                     continue
                 else:
                     continue
             self.deadlines[pkg.address] = deadline 
         
-        listOfVertices = [getattr(obj, 'address') for obj in listOfPackages] #Time Complexity O(n), Space Complexity: O(v)
+        listOfVertices = [getattr(obj, 'address') for obj in listOfPackages] 
         listOfVertices.append('HUB')
         
-        #Time Complexity(r*(v+e)), Space Complexity: O(v^2) from edges being a 2d array of vertices
         with open('Wgups Distances.csv', mode='r', encoding='UTF-8-sig') as file:
             csvFile = csv.reader(file, delimiter=',')
-            for row in csvFile: #Time/Space Complexity: O(r)
+            for row in csvFile: 
                 vertex = row[0]
                 index = row[1]
 ###lines 78-84, 108-129 - (Oggi AI - Artificial Intelligence Today, 2016)    
-                if vertex in listOfVertices: #Time Complexity O(v)
+                if vertex in listOfVertices: 
                     vertex = Vertex(vertex,index) 
-                    self.vertices[vertex.address] = vertex.index #Space Complexity O(v)
-                    for row in self.edges: #Time Complexity O(e)
+                    self.vertices[vertex.address] = vertex.index 
+                    for row in self.edges:
                         row.append(0)
-                    self.edges.append([0] * (len(self.edges)+1)) #Space Complexity: O(v^2) b/c 2d array
-                    self.edgeIndices[vertex.address] = len(self.edgeIndices) #Time complexity: O(1), Space Complexity: O(v)
-        self.reverseEdgeIndices = {address: index for index, address in self.edgeIndices.items()} #Time/Space Complexity: O(v)
+                    self.edges.append([0] * (len(self.edges)+1)) 
+                    self.edgeIndices[vertex.address] = len(self.edgeIndices) 
+        self.reverseEdgeIndices = {address: index for index, address in self.edgeIndices.items()} 
         
-        self.updateMatrixWithEdgeWeight() #Time Complexity: O(n^2), Space Complexity: O(v+(r*c))
+        self.updateMatrixWithEdgeWeight() 
     
     #Flow: 1.called by createMatrixSetEdgeIndices() when creating a local distance matrix with matrixAttributes() 
     #      2.calls addEdge() when updating matrix
@@ -93,23 +87,21 @@ class Matrix:
     #       a. keep track of zeroEdge to create mirror along it (this is where address and index reference themselves (e.g. (0,0), (1,1), (2,2))) 
     #       b. find edgeWeight and call addEdge() 
     #       c. set vertexIndex to None to prevent referencing it again
-    #Time Complexity: O(v^2), Space Complexity: O(v+(r*c))
-    #       a. v = number of vertices, r = number of rows in csvFile, c = number of columns in csvFile
-    #       b. includes addEdge(), which has a Time/Space Complexity: O(1)
+
     def updateMatrixWithEdgeWeight(self):
 ###lines 108-129 - (Oggi AI - Artificial Intelligence Today, 2016)  
-        vertexAddress = list(self.vertices.keys()) #Time/Space Complexity O(v)
-        vertexIndex = list(self.vertices.values()) #Time/Space Complexity O(v)
+        vertexAddress = list(self.vertices.keys()) 
+        vertexIndex = list(self.vertices.values()) 
 
         with open('WGUPS Distances.csv', mode='r', encoding='UTF-8-sig') as file:
-            csvFile = list(csv.reader(file, delimiter=',')) #Time/Space Complexity: O(r*c)
+            csvFile = list(csv.reader(file, delimiter=',')) 
             zeroEdge=0
-            for i in range(len(vertexIndex)): #Time complexity: O(v)
+            for i in range(len(vertexIndex)): 
                 
                 index1 = int(vertexIndex[i])   
-                if index1 is not None and str(index1) in csvFile[index1-1][1]: #Time Complexity generally O(1) b/c value is small and bounded
+                if index1 is not None and str(index1) in csvFile[index1-1][1]: 
                     
-                    for j in range(len(vertexIndex)): #Time Complexity: O(v)
+                    for j in range(len(vertexIndex)): 
                         if vertexIndex[j] == None:
                             continue
                         
@@ -118,14 +110,14 @@ class Matrix:
                         #if both indices are equal, then they reference themselves, so set value to 0
                         if index1 == index2:
                             weight = float(0)
-                            self.addEdge(vertexAddress[zeroEdge], vertexAddress[zeroEdge], weight) #Time/Space Complexity: O(1)
+                            self.addEdge(vertexAddress[zeroEdge], vertexAddress[zeroEdge], weight)
                             zeroEdge+=1
                             continue
                         else:
                             #decrement index2 because rows in csvfile start at 0 and index2 starts at 1
                             #increment index1 because columns in csvfile are offset by 1 due to index column
                             weight = float((csvFile[index2-1][index1+1]))
-                        self.addEdge(vertexAddress[i], vertexAddress[j], weight) #Time/Space Complexity: O(1)
+                        self.addEdge(vertexAddress[i], vertexAddress[j], weight) 
                         
                     vertexIndex[i] = None
 
@@ -134,12 +126,12 @@ class Matrix:
     # 1. verify that address is in self.vertices 
     # 2. update weight in self.edges using indices from edgeIndices that have the address (e.g. u, v) as the key 
     # 3. update itself and its mirror (e.g. (0,1)==(1,0), (2,5)==(5,2)) with weight from Distances csvFile
-    #Time/Space Complexity: O(1)
+    
 ###lines 140-146 - (Oggi AI - Artificial Intelligence Today, 2016)    
     def addEdge(self, u, v, weight):
-        if u in self.vertices and v in self.vertices: #Time Complexity: O(1) b/c dict
+        if u in self.vertices and v in self.vertices: 
             self.edges[self.edgeIndices[u]][self.edgeIndices[v]] = weight
-            self.edges[self.edgeIndices[v]][self.edgeIndices[u]] = weight #Time Complexity: O(1) for setting item in list and dict
+            self.edges[self.edgeIndices[v]][self.edgeIndices[u]] = weight 
             return True
         else:
             return False
@@ -161,22 +153,20 @@ class Matrix:
     #       a. truck.orderedDistances is update with a list of distances as they're traveled in the route
     #       b. truck.route is update with ordered list of addresses according to route of bestTour
     #       c. truck.milesDriven is updated with total distance traveled in bestTour
-    #Time Complexity: O(m*n^3), Space Complexity: O(v+n)
-    #       b. m = number of times while loop iterates, n = length of tour, v = number of vertices which is equal to len(edgeIndices)
-    #       a. space complexity takes into account the addressesFromTour() function called at the end 
+    
     def bestTour(self, truck):
-        tour = list(self.edgeIndices.values()) #Time/Space Complexity: O(v)
+        tour = list(self.edgeIndices.values()) 
         
         n = len(tour)
         
-        def calculateTourDistance(tour): #Time Complexity: O(n), Space Complexity: O(1)
+        def calculateTourDistance(tour): 
             totalDistance = 0
             for i in range(n):
                 totalDistance += self.edges[tour[i]][tour[(i + 1) % n]]
             return totalDistance
         
         #check if the tour meets all deadline requirements for packages in the tour.
-        def meetDeadline(tour): #Time Complexity: O(n)
+        def meetDeadline(tour): 
             endOfBusiness = datetime.strptime('4:00 PM', '%I:%M %p')
             tenThirtyDeadline = datetime.strptime('10:30 AM', '%I:%M %p')
             nineAMDeadline = datetime.strptime('9:00 AM', '%I:%M %p')
@@ -184,13 +174,13 @@ class Matrix:
             clock = Clock(startTime)
             
             distanceTraveled = 0
-            #Time Complexity: O(n)
+
             for i in range(n-1): 
-                distance = self.edges[tour[i]][tour[(i + 1) % n]] #Time/Space Complexity: O(1)
+                distance = self.edges[tour[i]][tour[(i + 1) % n]] 
                 distanceTraveled += distance
                 clock.addMinutes((distance/18)*60)
                 
-                deadline = self.deadlines[self.reverseEdgeIndices[tour[i+1]]] #Time/Space Complexity: O(1)
+                deadline = self.deadlines[self.reverseEdgeIndices[tour[i+1]]] 
 
                 if deadline <= nineAMDeadline:
                     if clock.getTime() <= nineAMDeadline:
@@ -215,18 +205,18 @@ class Matrix:
         bestDistance = currentDistance
 ###lines 218-242 - (2-Opt Algorithm to Solve the Travelling Salesman Problem in Python, n.d.)        
         improved = True
-        while improved: #Time Complexity O(m), difficult to determine b/c depends on tour and distances 
+        while improved: 
             improved = False
             #start range at 1 so that 0 is always start and end
-            for i in range(1, n-1): #Time Complexity: O(n)
-                for j in range(i + 1, n): #Time Complexity: O(n)
+            for i in range(1, n-1): 
+                for j in range(i + 1, n): 
 
                     # Create a new tour by swapping i and j
-                    newTour = tour[:i] + tour[i:j + 1][::-1] + tour[j + 1:] #Time Complexity: O(n)
+                    newTour = tour[:i] + tour[i:j + 1][::-1] + tour[j + 1:] 
                     
-                    newDistance = calculateTourDistance(newTour) #Time Complexity: O(n)
+                    newDistance = calculateTourDistance(newTour) 
                     
-                    if newDistance < bestDistance: #Time Complexity: O(n)
+                    if newDistance < bestDistance: 
                         tour = newTour
                         currentDistance = newDistance
                         
@@ -236,11 +226,11 @@ class Matrix:
 
                             improved = True
         
-        for i in range(n): #Time/Space Complexity: O(n)
+        for i in range(n): 
             distance = self.edges[bestTour[i]][bestTour[(i + 1) % n]]
             truck.orderedDistances.append(distance)  
         
-        tourAddresses = self.addressesFromTour(bestTour) #Time/Space Complexity: O(v+n)              
+        tourAddresses = self.addressesFromTour(bestTour)           
         truck.route = tourAddresses
         truck.milesDriven = bestDistance
         return tourAddresses
@@ -250,11 +240,11 @@ class Matrix:
     #   1. creates a list of addresses from the keys used in self.edgeIndices 
     #   2. iterate through tour which is a list of ordered indices that are the values from edgeIndices
     #   3. update addressTour [] with the address at the corresponding index from tour
-    #Time/Space Complexity: O(v+n)
+
     def addressesFromTour(self, tour):
-        addresses = list(self.edgeIndices.keys()) #Time and Space Complexity: O(v)
-        addressTour = [] #Space Complexity: O(n)
-        for index in tour: #Time Complexity: O(n)
+        addresses = list(self.edgeIndices.keys()) 
+        addressTour = [] 
+        for index in tour:
             addressTour.append(addresses[int(index)])
         return addressTour    
     
