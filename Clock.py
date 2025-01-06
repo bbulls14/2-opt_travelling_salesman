@@ -1,5 +1,5 @@
 from datetime import timedelta
-
+# clock tracks time in order to ensure packages are delivered on time
 class Clock:
     def __init__(self, startTime):
         self.current_time = startTime
