@@ -28,19 +28,17 @@ class HashTable():
 
     #Direct mapping of packageID to key
     #first package is first index in hashTable
-    #Time/Space Complexity: O(1)
     def hash(self, key):
         return key - 1
     
     #self-adjusting function to resize hashMap and update with existing buckets
-    #Time/Space complexity is O(2n) because hashmap doubles in size
     def resize(self, newSize):
         oldHashMap = self.hashMap
 
         self.size = newSize
-        self.hashMap = [None] * self.size #Time/Space Complexity: O(2n)
+        self.hashMap = [None] * self.size 
 
-        for bucket in oldHashMap: #Time/Space complexity O(n)
+        for bucket in oldHashMap:
             if bucket is not None:
                 self.rehash(bucket)
                 
@@ -52,11 +50,7 @@ class HashTable():
     #insert using packageID
     #includes self-Adjusting function to resize if used buckets equals size of hashMap
     #try->catch to ensure that inserts for packageIDs are within range and exclude non-existant data
-    #Time/Space Complexity: O(2n)    
-    #       a. Time complexity depends on whether resize() is called, 
-    #               when it's called the Time/Space Complexity is O(2n) because the hashMap doubles in size
-    #       b. when resize is not called, the Time Complexity is O(n) because of collision management 
-    #               and Space Complexity is O(1)
+
 ### 61-93 (PageKey, 2017)   
     def insert (self,key):
         key = int(key)
@@ -76,7 +70,7 @@ class HashTable():
         #self adjusts to double size if approaching capacity
         if self.used >= self.size:
             newSize = self.size * 2 
-            self.resize(newSize) #Time/SpaceComplexity: O(2n)
+            self.resize(newSize) 
              
         bucket = self.hashMap[bucketID]
         
@@ -85,7 +79,7 @@ class HashTable():
             return
         
         #handles collision by setting bucket to None and then reupdateing with existing data
-        #removes counter to maintain accurate used variable
+        #removes counter to maintain accurate "used" variable
         while bucket is not None:
             bucket = bucket.next     
         bucket = Bucket(key, bucketPackage)
@@ -93,7 +87,6 @@ class HashTable():
         return print(f"Collision: repopulated packageID {key} with existing data")
 
     #update bucket in hashTable values from a pkg
-    #Time complexity: O(n) because of collision management, Space Complexity: O(1) because bucketPackage is a fixed length of 6
     def update(self, key, pkg):
         key = int(key)
         if key < 1 or key > self.used:
@@ -122,7 +115,6 @@ class HashTable():
             self.hashMap[bucketID] = Bucket(key, updatedBucket)
 
     #look-up bucket using packageID    
-    #Time complexity: O(n) because of collision management, Space Complexity: O(1) because bucketPackage is a fixed length of 6            
 ### lines 127-143 (PageKey, 2017)    
     def find(self, key):
         key = int(key)
@@ -153,13 +145,11 @@ class HashTable():
     
     #iterate through packages from getPackageData in Package.py, call insert() for each packageID
     #insert package using packageID as key
-    #Time/Space Complexity: O(2n^2)
-    #       a. when resize() is not called in insert() function
-    #           i. Time/Space Complexity: O(n^2) 
+   
     def populateTable(self):
-        for package in self.hashPackageData: #Time/Space Complexity O(n)
+        for package in self.hashPackageData: 
             key = int(package.packageID)
-            self.insert(key) #Time/Space Complexity: O(2n)
+            self.insert(key) 
 
 
                                          
